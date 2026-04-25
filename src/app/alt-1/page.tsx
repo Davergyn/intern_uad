@@ -1,6 +1,7 @@
 import React from "react";
 import Navbar from "./navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
+import "./style/style.css";
 
 export default function Alt1Page() {
   return (
@@ -88,9 +89,7 @@ export default function Alt1Page() {
           </div>
         </div>
       </section>
-      {/* ========= upcoming events ========= */}
       <UpcomingEvents />
-      
     </main>
   );
 }

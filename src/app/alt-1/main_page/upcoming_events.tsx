@@ -67,49 +67,37 @@ const events = [
   },
 ];
 
-const CARDS_PER_PAGE = 2;
+const CARDS_PER_PAGE = 3;
 
 const UpcomingEvents = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const totalPages = Math.ceil(events.length / CARDS_PER_PAGE);
-// ...
-<div className="carousel-dots">
-  {Array.from({ length: totalPages }).map((_, index) => (
-    <span
-      key={index}
-      className={`dot ${currentPage === index ? 'active' : ''}`}
-      onClick={() => scrollToPage(index)}
-    ></span>
-  ))}
-</div>
 
   const handleScroll = () => {
     if (containerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
-      // Calculate the total scrollable width
       const totalScrollableWidth = scrollWidth - clientWidth;
-      // Calculate the current page based on the scroll position
-      const newPage = Math.round((scrollLeft / totalScrollableWidth) * (totalPages - 1));
-      
-      if (newPage !== currentPage) {
-        setCurrentPage(newPage);
-      }
+      if (totalScrollableWidth <= 0) return;
+      const ratio = scrollLeft / totalScrollableWidth;
+      const newPage = Math.round(ratio * (totalPages - 1));
+      setCurrentPage(Math.max(0, Math.min(newPage, totalPages - 1)));
     }
   };
 
   const scrollToPage = (page: number) => {
-  if (containerRef.current) {
-      const containerWidth = containerRef.current.offsetWidth;
+    if (containerRef.current) {
+      const { scrollWidth, clientWidth } = containerRef.current;
+      const totalScrollableWidth = scrollWidth - clientWidth;
+      const target = totalPages > 1 ? (page / (totalPages - 1)) * totalScrollableWidth : 0;
       containerRef.current.scrollTo({
-          left: containerWidth * page,
-          behavior: 'smooth',
+        left: target,
+        behavior: 'smooth',
       });
       setCurrentPage(page);
-  }
-};
-  
+    }
+  };
 
   return (
     <section className="upcoming-events-section">
@@ -152,9 +140,8 @@ const UpcomingEvents = () => {
           ))}
         </div>
       </div>
-       <div className="carousel-dots">
-        {/* Always render 2 dots */}
-        {[0, 1, 2].map((index) => (
+      <div className="carousel-dots">
+        {Array.from({ length: totalPages }).map((_, index) => (
           <span
             key={index}
             className={`dot ${currentPage === index ? 'active' : ''}`}

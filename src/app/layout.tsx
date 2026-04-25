@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
+import "./globals.css";
 // import Navbar from "@/components/Navbar";
 
 // ========================== i temporary changed the font to lexend ==========================

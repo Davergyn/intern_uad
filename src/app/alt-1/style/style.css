@@ -54,6 +54,12 @@
   scrollbar-width: none;  /* Firefox */
 }
 
+.carousel-wrapper {
+  width: 100%;
+  padding: 0 5%;
+  box-sizing: border-box;
+}
+
 .events-container::-webkit-scrollbar {
   display: none; /* Chrome, Safari, and Opera */
 }
@@ -76,8 +82,8 @@
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   text-align: left;
-  width: 350px; 
-  flex-shrink: 0; 
+  width: calc((100% / 3) - 1rem);
+  flex-shrink: 0;
   transition: transform 0.3s ease;
   border: 1px solid #eee;
   scroll-snap-align: start;
@@ -215,20 +221,18 @@
 
 .carousel-dots {
   margin-top: 2rem;
-}
-/* Add a wrapper for the carousel */
-.carousel-wrapper {
-  position: relative;
-  width: 100%;
-  padding: 0 5%;
-  box-sizing: border-box;
-  color: #E53935;
+  text-align: center;
 }
 
 .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+  margin: 0 5px;
   cursor: pointer;
-  background-color: #E53935;
-  border: 1px solid #E53935;
+  transition: background-color 0.3s ease;
 }
 
 .dot.active {
@@ -247,10 +251,11 @@
 
 .icon-users {
     background-image: url('/img/icon/icon_people.svg');
-    background-color: n;
+  
 }
 
 .icon-ticket {
     background-image: url('/img/icon/ticket-icon.svg');
+ 
 }
 /*================= Upcoming Events Section END ================= */
