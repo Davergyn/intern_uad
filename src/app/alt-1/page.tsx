@@ -1,6 +1,11 @@
 import React from "react";
 import Navbar from "./navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
+import PastEvents from "./main_page/past_events";
+import WhyChooseUs from "./main_page/why_choose_us";
+import WhatTheySay from "./main_page/what_they_say";
+import OurPartners from "./main_page/our_partners";
+import Footer from "./footer";
 import "./style/style.css";
 
 export default function Alt1Page() {
@@ -90,6 +95,11 @@ export default function Alt1Page() {
         </div>
       </section>
       <UpcomingEvents />
+      <PastEvents />
+      <WhyChooseUs />
+      <WhatTheySay />
+      <OurPartners />
+      <Footer />
     </main>
   );
 }
