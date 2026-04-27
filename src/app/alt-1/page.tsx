@@ -1,9 +1,28 @@
 import React from "react";
 import Navbar from "./navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
+import PastEvents from "./main_page/past_events";
+import PassEventsPage from "./pass_events";
+import WhyChooseUs from "./main_page/why_choose_us";
+import WhatTheySay from "./main_page/what_they_say";
+import OurPartners from "./main_page/our_partners";
+import Footer from "./footer";
 import "./style/style.css";
 
-export default function Alt1Page() {
+type Alt1PageProps = {
+  searchParams?: Promise<{ view?: string | string[] }> | { view?: string | string[] };
+};
+
+export default async function Alt1Page({ searchParams }: Alt1PageProps) {
+  const resolvedSearchParams = searchParams instanceof Promise ? await searchParams : searchParams;
+  const activeView = Array.isArray(resolvedSearchParams?.view)
+    ? resolvedSearchParams?.view[0]
+    : resolvedSearchParams?.view;
+
+  if (activeView === "pass_events") {
+    return <PassEventsPage />;
+  }
+
   return (
     <main className="min-h-screen bg-[#f3f4f6] text-[#111827]">
       <Navbar />
@@ -90,6 +109,11 @@ export default function Alt1Page() {
         </div>
       </section>
       <UpcomingEvents />
+      <PastEvents />
+      <WhyChooseUs />
+      <WhatTheySay />
+      <OurPartners />
+      <Footer />
     </main>
   );
 }
