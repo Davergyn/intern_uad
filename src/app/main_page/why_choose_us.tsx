@@ -1,5 +1,5 @@
 import react from "react";
-import "../style/style.css";
+
 
 const reasons = [
   {

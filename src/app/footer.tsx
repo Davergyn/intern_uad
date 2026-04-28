@@ -1,5 +1,4 @@
 import React from "react";
-import "./style/style.css";
 
 const companyLinks = ["About us", "Careers", "Premium Tools", "Blog"];
 const pageLinks = ["Login", "Register", "Add List", "Contact"];
