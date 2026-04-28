@@ -30,7 +30,7 @@ export default function Navbar() {
             <>
             {/* ========= navbar dropdown "event" =========  */}
               <a href="#" className="block whitespace-nowrap rounded-md px-3 py-2 text-sm transition hover:bg-[#f3f4f6] hover:text-[#d6362f]">Upcoming Events</a>
-              <a href="/alt-1?view=pass_events" className="block whitespace-nowrap rounded-md px-3 py-2 text-sm transition hover:bg-[#f3f4f6] hover:text-[#d6362f]">Pass Events</a>
+              <a href="/?view=pass_events" className="block whitespace-nowrap rounded-md px-3 py-2 text-sm transition hover:bg-[#f3f4f6] hover:text-[#d6362f]">Pass Events</a>
             </>
           ) : (
             <>

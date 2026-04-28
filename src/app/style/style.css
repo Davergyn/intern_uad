@@ -1,4 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Beau+Rivage&family=Cinzel+Decorative:wght@400;700;900&family=Lexend:wght@100..900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-lexend);
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-lexend), sans-serif;
+}
 
 
 /*================= Upcoming Events Section ================= */
