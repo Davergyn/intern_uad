@@ -44,21 +44,14 @@ export default function PassEventsPage() {
 							</div>
 						</div>
 
-						<p className="max-w-2xl text-base leading-8 text-white/90">
-							Disusun agar pengunjung lebih mudah memindai topik, format acara, dan periode pelaksanaan tanpa terasa seperti tabel data yang kaku.
-						</p>
+						
 					</div>
 
 					<div className="grid grid-cols-2 gap-3">
 						{stats.map((item) => (
 							<article
 								key={item.label}
-								className="rounded-xl border border-black/5 bg-[#f5f5f5] p-3 shadow-md"
-								style={{
-									backgroundImage:
-										"repeating-linear-gradient(90deg, rgba(216,40,47,0.1) 0px, rgba(216,40,47,0.1) 8px, rgba(245,245,245,0.85) 8px, rgba(245,245,245,0.85) 22px)",
-								}}
-							>
+								className="rounded-xl border border-black/5 bg-[#f5f5f5] p-3 shadow-md">
 								<p className="text-[0.95rem] text-[#6b7280]">{item.label}</p>
 								<p className="mt-1 text-[2.1rem] font-extrabold leading-none text-[#1f2937]">{item.value}</p>
 								<p className="mt-2 text-sm font-semibold text-[#b63a3a]">{item.note}</p>
@@ -67,6 +60,105 @@ export default function PassEventsPage() {
 					</div>
 				</div>
 			</section>
+
+			{/* ========== Past events card grid (6 cards) ========== */}
+			
+<section className="past-events-section">
+  <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div>
+      <h2 className="text-[clamp(1.9rem,2.2vw,2.6rem)] font-extrabold leading-[1.15] text-[#111827]">
+        Daftar event terdahulu
+      </h2>
+      <p className="mt-2 text-[clamp(0.95rem,1.05vw,1.2rem)] leading-[1.45] text-[#6b7280]">
+        Lorem Ipsum dolar sitmet, consecratun adipascingg elit, sed da sat eiusmod
+      </p>
+    </div>
+
+    <div className="mt-5 flex flex-wrap items-center gap-3">
+      <div className="relative w-full max-w-[370px]">
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#6b7280]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 21L16.65 16.65M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </span>
+        <input
+          type="text"
+          placeholder="Cari nama event"
+          className="h-14 w-full rounded-full border border-[#f0e4e4] bg-[#f4ecec] pl-12 pr-4 text-[1.05rem] text-[#6b7280] outline-none placeholder:text-[#6b7280]"
+        />
+      </div>
+
+      <button className="h-14 rounded-full bg-[#f4ecec] px-8 text-[1.1rem] font-semibold text-[#b12d2d]">
+        Semua
+      </button>
+     <button className="h-14 rounded-full bg-[#f4ecec] px-8 text-[1.1rem] font-semibold text-[#b12d2d]">
+        Webinar
+      </button>
+      <button className="h-14 rounded-full bg-[#f4ecec] px-8 text-[1.1rem] font-semibold text-[#b12d2d]">
+        Workshop
+      </button>
+    </div>
+
+    <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <article
+          key={i}
+          className="overflow-hidden rounded-xl border border-[#d9dde3] bg-white shadow-[0_2px_8px_rgba(17,24,39,0.08)]"
+        >
+          <div className="relative h-[230px] w-full">
+            <img
+              src="/img/assets/img_for_upcomingE.png"
+              alt={`event-${i}`}
+              className="h-full w-full object-cover"
+            />
+            <span className="absolute right-3 top-3 rounded-full bg-[#ef4444] px-3 py-1 text-[11px] font-semibold text-white">
+              Webinar
+            </span>
+          </div>
+
+          <div className="p-4">
+            <h3 className="text-[clamp(1.3rem,1.55vw,1.75rem)] font-extrabold leading-[1.2] text-[#111827]">
+              Judul Upcoming Event 1
+            </h3>
+
+            <p className="mt-2 text-[clamp(0.95rem,1.05vw,1.08rem)] leading-[1.55] text-[#4b5563]">
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
+              incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+              exercitation ullamco laboris
+            </p>
+
+            <div className="mt-3 flex items-center gap-4 text-[0.78rem] sm:text-[0.82rem] text-[#6b7280]">
+              <span className="inline-flex items-center gap-1">
+                <img src="/img/icon/icon_people.svg" alt="" className="h-4 w-4" />
+                04 April 2026
+              </span>
+              <span className="inline-flex items-center gap-1">
+                <img src="/img/icon/ticket-icon.svg" alt="" className="h-4 w-4" />
+                Kampus 4 UAD
+              </span>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    <div className="mt-7 flex items-center justify-between">
+      <p className="text-[1.05rem] text-[#6b7280]">
+        Menampilkan 6 event pilihan dari arsip terbaru.
+      </p>
+      <div className="flex items-center gap-3">
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7ecec] text-[#6b7280]">
+          ←
+        </button>
+        <button className="h-10 w-10 rounded-full bg-[#d6362f] font-semibold text-white">1</button>
+        <button className="h-10 w-10 rounded-full bg-[#f7ecec] font-semibold text-[#6b7280]">2</button>
+        <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f7ecec] text-[#6b7280]">
+          →
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
 		</main>
 	);
 }
