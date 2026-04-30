@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // ─────────────────────────────────────────────
@@ -333,9 +334,12 @@ export default function Navbar() {
         {/* ── Desktop LOG IN + Hamburger ── */}
         <div className="flex items-center gap-3">
           {/* LOG IN only on desktop */}
-          <button className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block">
+          <Link
+            href="/auth/login"
+            className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
+          >
             LOG IN
-          </button>
+          </Link>
 
           {/* Hamburger (mobile) */}
           <button
@@ -428,12 +432,13 @@ export default function Navbar() {
           )}
 
           {/* LOG IN inside mobile drawer */}
-          <button
-            className="mt-4 w-full rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] active:scale-95"
+          <Link
+            href="/auth/login"
+            className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] active:scale-95"
             onClick={() => setMenuOpen(false)}
           >
             LOG IN
-          </button>
+          </Link>
         </nav>
       </div>
     </header>
