@@ -1,12 +1,12 @@
 import React from "react";
-import Navbar from "./navbar";
+import Navbar from "./components/navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
 import PastEvents from "./main_page/past_events";
-import PassEventsPage from "./pass_events";
+import PassEventsPage from "./components/pass_events";
 import WhyChooseUs from "./main_page/why_choose_us";
 import WhatTheySay from "./main_page/what_they_say";
 import OurPartners from "./main_page/our_partners";
-import Footer from "./footer";
+import Footer from "./components/footer";
 
 type Alt1PageProps = {
   searchParams?: Promise<{ view?: string | string[] }> | { view?: string | string[] };
@@ -26,7 +26,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
     <main className="min-h-screen bg-[#f3f4f6] text-[#111827]">
       <Navbar />
 
-      <section className="mx-auto w-full max-w-6xl px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pt-14">
+      <section id="about-us" className="mx-auto w-full max-w-6xl px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pt-14">
         <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
             <h1 className="max-w-xl text-4xl font-black leading-tight tracking-tight sm:text-5xl">
@@ -48,8 +48,8 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
               berkelanjutan.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-5">
-              <button className="rounded-md bg-[#cf2f2a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-[#b92924]">
+            <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:flex-wrap">
+              <button className="w-full rounded-md bg-[#cf2f2a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-[#b92924] sm:w-auto">
                 GET YOUR JOURNEY →
               </button>
 
@@ -81,7 +81,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
                 alt="Cyber security training visual"
                 className="h-[260px] w-full object-cover sm:h-[340px] lg:h-[360px]"
               />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#7f1d1d]/40 via-transparent to-[#111827]/30" />
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-[#7f1d1d]/40 via-transparent to-[#111827]/30" />
             </div>
           </div>
         </div>
@@ -107,11 +107,11 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
           </div>
         </div>
       </section>
-      <UpcomingEvents />
-      <PastEvents />
-      <WhyChooseUs />
-      <WhatTheySay />
-      <OurPartners />
+      <div id="upcoming-events"><UpcomingEvents /></div>
+      <div id="past-events"><PastEvents /></div>
+      <div id="trainers"><WhyChooseUs /></div>
+      <div id="materi"><WhatTheySay /></div>
+      <div id="contact-us"><OurPartners /></div>
       <Footer />
     </main>
   );
