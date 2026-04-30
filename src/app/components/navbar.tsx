@@ -224,19 +224,37 @@ function DesktopNavLink({
   href: string;
   isActive?: boolean;
 }) {
-  return (
+  const isHash = href.startsWith("#");
+  return isHash ? (
     <button
       onClick={() => scrollToSection(href)}
-      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
-        }`}
+      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${
+        isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
+      }`}
     >
       {icons[label]}
       {label}
       <span
-        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${isActive ? "w-full opacity-100" : "w-0 opacity-0 group-hover:w-full group-hover:opacity-100"
-          }`}
+        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
+          isActive ? "w-full opacity-100" : "w-0 opacity-0"
+        }`}
       />
     </button>
+  ) : (
+    <a
+      href={href}
+      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${
+        isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
+      }`}
+    >
+      {icons[label]}
+      {label}
+      <span
+        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
+          isActive ? "w-full opacity-100" : "w-0 opacity-0"
+        }`}
+      />
+    </a>
   );
 }
 
@@ -254,6 +272,18 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const activeSection = useActiveSection(allSectionIds);
+  const pathname = usePathname();
+
+  // Helper: resolve isActive for any nav item
+  // — pathname-based for real routes, scroll-based for hash-only links
+  function isLinkActive(href: string): boolean {
+    if (href.startsWith("/")) return pathname === href || pathname.startsWith(href + "/");
+    return "#" + activeSection === href;
+  }
+
+  function isDropdownActive(items: { label: string; href: string }[]): boolean {
+    return items.some((sub) => isLinkActive(sub.href));
+  }
 
   const toggleMobileDropdown = (label: string) =>
     setMobileDropdown(mobileDropdown === label ? null : label);
@@ -287,14 +317,14 @@ export default function Navbar() {
                 label={item.label}
                 items={item.items}
                 isGrid={item.label === "Programs"}
-                isActive={item.items.some((sub) => "#" + activeSection === sub.href)}
+                isActive={isDropdownActive(item.items)}
               />
             ) : (
               <DesktopNavLink
                 key={item.label}
                 label={item.label}
                 href={item.href}
-                isActive={"#" + activeSection === item.href}
+                isActive={isLinkActive(item.href)}
               />
             )
           )}
