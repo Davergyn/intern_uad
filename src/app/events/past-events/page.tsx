@@ -95,7 +95,7 @@ function Pagination({
         ) : (
           <button
             key={p}
-            onClick={() => onChange(p)}
+            onClick={() => onChange(p as number)}
             aria-label={`Halaman ${p}`}
             aria-current={p === current ? "page" : undefined}
             className={`${btn} ${p === current ? "bg-[#1f2937] text-white" : "text-[#6b7280] hover:bg-gray-100"}`}
@@ -143,11 +143,11 @@ export default function PastEventsPage() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-10 lg:py-14">
 
         {/* ── Header Banner ── */}
-        <div className="mb-8 flex items-start gap-6 rounded-2xl bg-[#e5e7eb] p-8 sm:p-10">
+        <div className="mb-8 flex flex-col sm:flex-row items-start gap-6 rounded-2xl bg-[#e5e7eb] p-6 sm:p-10">
           {/* Clock icon */}
           <div className="flex-shrink-0 mt-0.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1f2937]">
-              <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-[#1f2937]">
+              <svg className="h-7 w-7 sm:h-8 sm:w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
               </svg>
@@ -156,18 +156,58 @@ export default function PastEventsPage() {
 
           {/* Text */}
           <div>
-            <h1 className="text-2xl font-extrabold text-[#111827]">Past Events</h1>
-            <p className="mt-2 text-[1.05rem] text-[#4b5563]">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-[#111827]">Past Events</h1>
+            <p className="mt-2 text-[1rem] sm:text-[1.05rem] text-[#4b5563]">
               Historical record of past training events.
             </p>
-            <p className="text-[1.05rem] text-[#4b5563]">
+            <p className="text-[1rem] sm:text-[1.05rem] text-[#4b5563]">
               A range of past events — online webinars, hands-on workshops, and insightful seminars.
             </p>
           </div>
         </div>
 
-        {/* ── Table ── */}
-        <div className="overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-[0_2px_15px_rgba(0,0,0,0.03)]">
+        {/* ── Mobile View (Cards) ── */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
+          {visible.length > 0 ? (
+            visible.map((row) => (
+              <div 
+                key={row.id} 
+                className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+              >
+                {/* Badges */}
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${typeBadgeClass[row.type]}`}>
+                    {row.type}
+                  </span>
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${deliveryBadgeClass[row.delivery]}`}>
+                    <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                    {row.delivery}
+                  </span>
+                </div>
+
+                {/* Name */}
+                <h3 className="text-[1rem] font-semibold text-[#1f2937] leading-snug">
+                  {row.name}
+                </h3>
+
+                {/* Date */}
+                <div className="flex items-center gap-2 text-sm text-[#6b7280] mt-1">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {row.date}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-12 text-center text-gray-500 rounded-xl bg-white border border-gray-100">
+              Belum ada data event masa lalu.
+            </div>
+          )}
+        </div>
+
+        {/* ── Desktop View (Table) ── */}
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100 bg-white shadow-[0_2px_15px_rgba(0,0,0,0.03)]">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr>
@@ -182,45 +222,55 @@ export default function PastEventsPage() {
               </tr>
             </thead>
             <tbody>
-              {visible.map((row) => (
-                <tr
-                  key={row.id}
-                  className="border-b border-gray-100 last:border-b-0 transition-colors hover:bg-[#f9fafb]"
-                >
-                  {/* Type */}
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${typeBadgeClass[row.type]}`}>
-                      {row.type}
-                    </span>
-                  </td>
+              {visible.length > 0 ? (
+                visible.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-gray-100 last:border-b-0 transition-colors hover:bg-[#f9fafb]"
+                  >
+                    {/* Type */}
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${typeBadgeClass[row.type]}`}>
+                        {row.type}
+                      </span>
+                    </td>
 
-                  {/* Name */}
-                  <td className="py-4 px-6 text-[0.95rem] text-[#1f2937] font-medium max-w-[320px]">
-                    {row.name}
-                  </td>
+                    {/* Name */}
+                    <td className="py-4 px-6 text-[0.95rem] text-[#1f2937] font-medium max-w-[320px]">
+                      {row.name}
+                    </td>
 
-                  {/* Date */}
-                  <td className="py-4 px-6 text-[0.95rem] text-[#6b7280] whitespace-nowrap">
-                    {row.date}
-                  </td>
+                    {/* Date */}
+                    <td className="py-4 px-6 text-[0.95rem] text-[#6b7280] whitespace-nowrap">
+                      {row.date}
+                    </td>
 
-                  {/* Delivery */}
-                  <td className="py-4 px-6 whitespace-nowrap">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${deliveryBadgeClass[row.delivery]}`}>
-                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                      {row.delivery}
-                    </span>
+                    {/* Delivery */}
+                    <td className="py-4 px-6 whitespace-nowrap">
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${deliveryBadgeClass[row.delivery]}`}>
+                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                        {row.delivery}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-gray-500">
+                    Belum ada data event masa lalu.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         {/* ── Row count info ── */}
-        <p className="mt-4 text-center text-xs text-[#9ca3af]">
-          Menampilkan {start + 1}–{Math.min(start + ROWS_PER_PAGE, allEvents.length)} dari {allEvents.length} event
-        </p>
+        {allEvents.length > 0 && (
+          <p className="mt-6 text-center text-xs text-[#9ca3af]">
+            Menampilkan {start + 1}–{Math.min(start + ROWS_PER_PAGE, allEvents.length)} dari {allEvents.length} event
+          </p>
+        )}
 
         {/* ── Pagination ── */}
         {totalPages > 1 && (
