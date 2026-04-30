@@ -66,7 +66,7 @@ const navConfig: NavItem[] = [
   { type: "dropdown", label: "Programs", items: programsDropdown },
   { type: "link", label: "Trainers", href: "/trainers" },
   { type: "link", label: "Materi", href: "/materi" },
-  { type: "link", label: "Contact Us", href: "#contact-us" },
+  { type: "link", label: "Contact Us", href: "/contact-us" },
 ];
 
 // ─────────────────────────────────────────────
