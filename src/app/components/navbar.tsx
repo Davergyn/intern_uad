@@ -64,8 +64,8 @@ const navConfig: NavItem[] = [
   { type: "link", label: "About Us", href: "/about" },
   { type: "dropdown", label: "Events", items: eventsDropdown },
   { type: "dropdown", label: "Programs", items: programsDropdown },
-  { type: "link", label: "Trainers", href: "#trainers" },
-  { type: "link", label: "Materi", href: "#materi" },
+  { type: "link", label: "Trainers", href: "/trainers" },
+  { type: "link", label: "Materi", href: "/materi" },
   { type: "link", label: "Contact Us", href: "#contact-us" },
 ];
 
