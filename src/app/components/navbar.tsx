@@ -46,7 +46,7 @@ const icons: Record<string, React.ReactNode> = {
 
 const eventsDropdown = [
   { label: "Upcoming Events", href: "#upcoming-events" },
-  { label: "Past Events", href: "#past-events" },
+  { label: "Past Events",     href: "/events/past-events" },
 ];
 
 const programsDropdown = [
