@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import HeroSection from "../hero_section";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
@@ -29,49 +30,7 @@ export default function LoginPage() {
 	return (
 		<div className="min-h-screen flex">
 			{/* Left Section - Red Background */}
-			<div className="hidden lg:flex w-1/2 bg-[#d32626] text-white flex-col justify-between p-12 relative overflow-hidden">
-				{/* Decorative Shapes */}
-				<div className="absolute inset-0 opacity-10">
-					<div className="absolute left-0 top-0 h-44 w-44 bg-white" style={{ clipPath: "polygon(0 0, 100% 0, 0 100%)" }} />
-					<div className="absolute right-0 top-0 h-44 w-44 rounded-bl-[7rem] bg-white" />
-					<div className="absolute right-0 bottom-0 h-56 w-56 rounded-tl-[8rem] bg-white" />
-					<div className="absolute left-1/2 top-[-5rem] h-40 w-40 -translate-x-1/2 rounded-full border-[22px] border-white" />
-				</div>
-
-				{/* Logo */}
-				<div className="relative z-10">
-					<p className="text-sm font-bold">
-						<span className="text-white">.id</span>
-						<span className="text-white/70"> academy</span>
-					</p>
-				</div>
-
-				{/* Main Content */}
-				<div className="relative z-10">
-					<h1 className="text-5xl font-black leading-tight mb-6">
-						Mulai Perjalanan Digital Anda Hari Ini.
-					</h1>
-					<p className="text-white/95 text-lg leading-8 max-w-md">
-						Akses ratusan materi pembelajaran, event eksklusif, dan bergabunglah dengan komunitas profesional digital terbesar di Indonesia.
-					</p>
-				</div>
-
-				{/* Stats */}
-				<div className="relative z-10 flex gap-10">
-					<div>
-						<p className="text-4xl font-black">5000+</p>
-						<p className="text-white/80 text-sm mt-1">Peserta Aktif</p>
-					</div>
-					<div>
-						<p className="text-4xl font-black">1000+</p>
-						<p className="text-white/80 text-sm mt-1">Narasumber</p>
-					</div>
-					<div>
-						<p className="text-4xl font-black">4.9/5</p>
-						<p className="text-white/80 text-sm mt-1">Rating Platform</p>
-					</div>
-				</div>
-			</div>
+			<HeroSection/>
 
 			{/* Right Section - White Background */}
 			<div className="w-full lg:w-1/2 bg-white flex flex-col items-center justify-center p-6 sm:p-8 lg:p-12">
