@@ -92,9 +92,12 @@ export default function LoginPage() {
 						<button className="px-6 py-3 font-bold text-[#111827] border-b-2 border-[#d32626]">
 							Masuk
 						</button>
-						<button className="px-6 py-3 font-bold text-[#9ca3af] hover:text-[#111827]">
-							Daftar
-						</button>
+                        <Link
+                        href="/auth/registrasi"
+                        className="px-6 py-3 font-bold text-[#9ca3af] hover:text-[#111827]"
+                        >
+                        Daftar
+                        </Link>
 					</div>
 				</div>
 
