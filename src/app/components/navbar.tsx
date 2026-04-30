@@ -50,10 +50,10 @@ const eventsDropdown = [
 ];
 
 const programsDropdown = [
-  { label: "Training of Trainer", href: "#training" },
-  { label: "Workshop", href: "#workshop" },
-  { label: "Seminar", href: "#seminar" },
-  { label: "Partnership", href: "#partnership" },
+  { label: "Training of Trainer", href: "/programs/training-of-trainer" },
+  { label: "Seminar", href: "/programs/seminar" },
+  { label: "Workshop", href: "/programs/workshop" },
+  { label: "Partnership", href: "/programs/partnership" },
 ];
 
 type NavItem =
