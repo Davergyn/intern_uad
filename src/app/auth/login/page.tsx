@@ -4,22 +4,43 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import HeroSection from "../hero_section";
+import { useAuth } from "@/lib/authContext";
 
 export default function LoginPage() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [rememberMe, setRememberMe] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState("");
 	const router = useRouter();
+	const { loginAsAdmin } = useAuth();
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setError("");
 		setIsLoading(true);
-		// Simulasi login
-		setTimeout(() => {
-			setIsLoading(false);
-			router.push("/dashboard");
-		}, 1500);
+
+		// Check if it's admin login
+		if (loginAsAdmin(email, password)) {
+			// Admin login successful
+			setTimeout(() => {
+				setIsLoading(false);
+				router.push("/feature-admin/admin-dashboard");
+			}, 1500);
+		} else {
+			// Regular user login (simulate)
+			setTimeout(() => {
+				setIsLoading(false);
+				// Check if credentials are empty or invalid
+				if (!email || !password) {
+					setError("Email dan password harus diisi");
+				} else {
+					// For now, we'll show an error message for non-admin logins
+					// In a real app, you would authenticate against a database
+					setError("Email atau password salah");
+				}
+			}, 1500);
+		}
 	};
     const [showPassword, setShowPassword] = useState(false);
 	const handleGoogleLogin = () => {
@@ -69,6 +90,13 @@ export default function LoginPage() {
 						Silakan masuk ke akun id Academy Anda.
 					</p>
 				</div>
+
+				{/* Error Message */}
+				{error && (
+					<div className="w-full max-w-md mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+						{error}
+					</div>
+				)}
 
 				{/* Form */}
 				<form onSubmit={handleSubmit} className="w-full max-w-md space-y-5">

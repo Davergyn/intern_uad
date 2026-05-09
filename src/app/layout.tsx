@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Lexend } from "next/font/google";
 import "./style/style.css";
+import { AuthProvider } from "@/lib/authContext";
 // import Navbar from "@/components/Navbar";
 
 // ========================== i temporary changed the font to lexend ==========================
@@ -25,7 +26,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${lexend.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }
