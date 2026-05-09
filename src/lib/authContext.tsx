@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     }
     return false;
-  };
+  }; 
 
   const logout = () => {
     setIsAdmin(false);
