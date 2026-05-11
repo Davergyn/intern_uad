@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 // ─────────────────────────────────────────────
 //  DATA
@@ -42,12 +43,21 @@ function FooterCol({
       <ul className="flex flex-col gap-3">
         {links.map((link) => (
           <li key={link.label}>
-            <a
-              href={link.href}
-              className="text-sm text-[#6b7280] transition-colors duration-150 hover:text-[#d6362f]"
-            >
-              {link.label}
-            </a>
+            {link.href.startsWith("/") ? (
+              <Link
+                href={link.href}
+                className="text-sm text-[#6b7280] transition-colors duration-150 hover:text-[#d6362f]"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                href={link.href}
+                className="text-sm text-[#6b7280] transition-colors duration-150 hover:text-[#d6362f]"
+              >
+                {link.label}
+              </a>
+            )}
           </li>
         ))}
       </ul>
@@ -86,10 +96,10 @@ export default function Footer() {
           {/* Brand column */}
           <div className="col-span-2 sm:col-span-1">
             {/* Logo */}
-            <a href="/" className="inline-flex items-baseline gap-0.5 text-xl font-extrabold tracking-tight">
+            <Link href="/" className="inline-flex items-baseline gap-0.5 text-xl font-extrabold tracking-tight">
               <span className="text-[#d6362f]">.id</span>
               <span className="text-[#10b981]">academy</span>
-            </a>
+            </Link>
 
             {/* Tagline */}
             <p className="mt-3 text-sm leading-6 text-[#6b7280]">

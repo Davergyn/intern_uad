@@ -19,6 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedAdminEmail = localStorage.getItem("adminEmail");
     if (storedAdminEmail) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAdminEmail(storedAdminEmail);
       setIsAdmin(true);
     }

@@ -315,14 +315,14 @@ export default function Navbar() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
 
         {/* ── Logo ── */}
-        <a
+        <Link
           href="/"
           className="text-2xl font-extrabold tracking-tight"
           aria-label=".id academy home"
         >
           <span className="text-[#d6362f]">.id</span>{" "}
           <span className="text-[#10b981]">academy</span>
-        </a>
+        </Link>
 
         {/* ── Desktop Nav ── */}
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Main navigation">
