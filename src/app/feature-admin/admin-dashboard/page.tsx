@@ -1,163 +1,123 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/authContext";
+import React from "react";
+import { CalendarDays, Rocket, Users, BookOpen, TrendingUp, Star } from "lucide-react";
 import Link from "next/link";
-import ManageEvents from "../manage-events";
-import ManageUsers from "../manage-users";
-import Analytics from "../analytics";
 
-export default function AdminDashboard() {
-  const { adminEmail, logout } = useAuth();
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState("dashboard");
+const STATS = [
+  { label: "Total Events", value: "12", change: "+3 bulan ini", icon: CalendarDays, color: "bg-blue-500", light: "bg-blue-50 text-blue-600" },
+  { label: "Total Programs", value: "4", change: "+1 bulan ini", icon: Rocket, color: "bg-purple-500", light: "bg-purple-50 text-purple-600" },
+  { label: "Total Trainers", value: "8", change: "Aktif semua", icon: Users, color: "bg-emerald-500", light: "bg-emerald-50 text-emerald-600" },
+  { label: "Total Materi", value: "6", change: "+2 bulan ini", icon: BookOpen, color: "bg-orange-500", light: "bg-orange-50 text-orange-600" },
+];
 
+const RECENT_EVENTS = [
+  { name: "Transformasi Digital UMKM dengan Domain .id", type: "Webinar", date: "12 Jan 2025", status: "Online" },
+  { name: "Workshop DNS Management untuk Pemula", type: "Workshop", date: "14 Apr 2025", status: "Face to Face" },
+  { name: "Kedaulatan Digital Indonesia di Era Internet 5.0", type: "Seminar", date: "5 Mar 2025", status: "Online" },
+  { name: "Training of Trainer Batch 3", type: "Training", date: "18 Mar 2025", status: "Face to Face" },
+];
 
-  const handleLogout = () => {
-    logout();
-    router.push("/");
-  };
+const TYPE_COLOR: Record<string, string> = {
+  Webinar: "bg-blue-50 text-blue-600",
+  Workshop: "bg-amber-50 text-amber-600",
+  Seminar: "bg-purple-50 text-purple-600",
+  Training: "bg-green-50 text-green-600",
+};
 
-  const totalUsers = 3;
-  const activeUsers = 2;
-  const totalEvents = 3;
-  const upcomingEvents = 2;
+const QUICK_LINKS = [
+  { href: "/feature-admin/admin-dashboard/events", label: "Kelola Events", icon: CalendarDays, desc: "Tambah & kelola event" },
+  { href: "/feature-admin/admin-dashboard/programs", label: "Kelola Programs", icon: Rocket, desc: "Kelola program konten" },
+  { href: "/feature-admin/admin-dashboard/trainers", label: "Kelola Trainers", icon: Users, desc: "Data trainer & profil" },
+  { href: "/feature-admin/admin-dashboard/materi", label: "Kelola Materi", icon: BookOpen, desc: "Modul & buku digital" },
+];
 
+export default function AdminOverviewPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">.id Academy Admin</h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Logged in as: <span className="font-semibold">{adminEmail}</span>
-            </p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-semibold"
-          >
-            Logout
-          </button>
+    <div className="space-y-6">
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl p-6 text-white flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold">Selamat Datang, Admin! 👋</h2>
+          <p className="text-slate-300 text-sm mt-1">Kelola konten .id Academy dari panel ini.</p>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation Tabs */}
-        <div className="mb-8 border-b border-gray-200">
-          <nav className="flex space-x-8" aria-label="Tabs">
-            {[
-              { id: "dashboard", label: "Dashboard" },
-              { id: "users", label: "Manage Users" },
-              { id: "events", label: "Manage Events" },
-              { id: "analytics", label: "Analytics" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
-                  activeTab === tab.id
-                    ? "border-red-600 text-red-600"
-                    : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
+        <div className="hidden sm:flex items-center gap-2 bg-white/10 rounded-xl px-4 py-2">
+          <Star size={16} className="text-yellow-400" />
+          <span className="text-sm font-medium">Admin Aktif</span>
         </div>
-
-        {/* Dashboard Tab */}
-        {activeTab === "dashboard" && (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Total Users</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{totalUsers}</p>
-                  </div>
-                  <div className="text-4xl text-blue-500 opacity-20">👥</div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Active Users</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{activeUsers}</p>
-                  </div>
-                  <div className="text-4xl text-green-500 opacity-20">✓</div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Total Events</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{totalEvents}</p>
-                  </div>
-                  <div className="text-4xl text-purple-500 opacity-20">📅</div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-gray-600 text-sm font-medium">Upcoming Events</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{upcomingEvents}</p>
-                  </div>
-                  <div className="text-4xl text-orange-500 opacity-20">🎯</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Recent Activity</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                  <div>
-                    <p className="text-gray-900 font-medium">New user registration</p>
-                    <p className="text-sm text-gray-600">Jane Smith joined the platform</p>
-                  </div>
-                  <p className="text-sm text-gray-600">2 hours ago</p>
-                </div>
-                <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                  <div>
-                    <p className="text-gray-900 font-medium">Event completed</p>
-                    <p className="text-sm text-gray-600">Digital Marketing Seminar finished</p>
-                  </div>
-                  <p className="text-sm text-gray-600">5 hours ago</p>
-                </div>
-                <div className="flex items-center justify-between py-3">
-                  <div>
-                    <p className="text-gray-900 font-medium">New event created</p>
-                    <p className="text-sm text-gray-600">AI Training Program scheduled</p>
-                  </div>
-                  <p className="text-sm text-gray-600">1 day ago</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Users Tab */}
-        {activeTab === "users" && <ManageUsers />}
-
-        {/* Events Tab */}
-        {activeTab === "events" && <ManageEvents />}
-
-        {/* Analytics Tab */}
-        {activeTab === "analytics" && <Analytics />}
       </div>
 
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        {STATS.map(({ label, value, change, icon: Icon, color, light }) => (
+          <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</p>
+                <p className="text-3xl font-extrabold text-slate-800 mt-1">{value}</p>
+                <span className={`inline-flex items-center gap-1 text-xs font-medium mt-2 px-2 py-0.5 rounded-full ${light}`}>
+                  <TrendingUp size={10} /> {change}
+                </span>
+              </div>
+              <div className={`w-11 h-11 rounded-xl ${color} flex items-center justify-center shadow-md`}>
+                <Icon size={20} className="text-white" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
+      {/* Two columns: Recent Events + Quick Access */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Events */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="font-bold text-slate-800">Event Terbaru</h3>
+            <Link href="/feature-admin/admin-dashboard/events" className="text-xs text-[#CB2229] font-semibold hover:underline">
+              Lihat Semua →
+            </Link>
+          </div>
+          <div className="divide-y divide-slate-50">
+            {RECENT_EVENTS.map((ev) => (
+              <div key={ev.name} className="px-6 py-4 flex items-start gap-4 hover:bg-slate-50 transition-colors">
+                <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[11px] font-semibold mt-0.5 ${TYPE_COLOR[ev.type]}`}>
+                  {ev.type}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-800 truncate">{ev.name}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{ev.date}</p>
+                </div>
+                <span className={`flex-shrink-0 flex items-center gap-1 text-[11px] font-medium ${ev.status === "Online" ? "text-sky-600" : "text-rose-500"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${ev.status === "Online" ? "bg-sky-500" : "bg-rose-500"}`} />
+                  {ev.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick Access */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <h3 className="font-bold text-slate-800 mb-4">Akses Cepat</h3>
+          <div className="space-y-2">
+            {QUICK_LINKS.map(({ href, label, icon: Icon, desc }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all group"
+              >
+                <div className="w-9 h-9 rounded-lg bg-[#CB2229]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#CB2229]/20 transition-colors">
+                  <Icon size={16} className="text-[#CB2229]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-700">{label}</p>
+                  <p className="text-[11px] text-slate-400">{desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

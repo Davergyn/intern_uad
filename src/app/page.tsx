@@ -1,8 +1,7 @@
+'use client';
 import React from "react";
 import Navbar from "./components/navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
-import PastEvents from "./main_page/past_events";
-import PassEventsPage from "./components/pass_events";
 import WhyChooseUs from "./main_page/why_choose_us";
 import WhatTheySay from "./main_page/what_they_say";
 import OurPartners from "./main_page/our_partners";
@@ -18,9 +17,6 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
     ? resolvedSearchParams?.view[0]
     : resolvedSearchParams?.view;
 
-  if (activeView === "pass_events") {
-    return <PassEventsPage />;
-  }
 
   return (
     <main className="min-h-screen bg-[#f3f4f6] text-[#111827]">
@@ -108,7 +104,6 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
         </div>
       </section>
       <div id="upcoming-events"><UpcomingEvents /></div>
-      <div id="past-events"><PastEvents /></div>
       <div id="trainers"><WhyChooseUs /></div>
       <div id="materi"><WhatTheySay /></div>
       <div id="contact-us"><OurPartners /></div>

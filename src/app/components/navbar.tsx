@@ -46,8 +46,8 @@ const icons: Record<string, React.ReactNode> = {
 // ─────────────────────────────────────────────
 
 const eventsDropdown = [
-  { label: "Upcoming Events", href: "#upcoming-events" },
-  { label: "Past Events",     href: "/events/past-events" },
+  { label: "Upcoming Events", href: "/events/up-events" },
+  { label: "Past Events", href: "/events/past-events" },
 ];
 
 const programsDropdown = [
@@ -185,27 +185,46 @@ function DesktopDropdown({
       {/* Dropdown panel */}
       <div
         className={`absolute left-0 top-full z-50 mt-2 origin-top transition-all duration-200 ${open
-            ? "scale-y-100 opacity-100 translate-y-0 pointer-events-auto"
-            : "scale-y-95 opacity-0 -translate-y-1 pointer-events-none"
+          ? "scale-y-100 opacity-100 translate-y-0 pointer-events-auto"
+          : "scale-y-95 opacity-0 -translate-y-1 pointer-events-none"
           }`}
       >
         <div
           className={`rounded-xl border border-white/20 bg-white/80 p-2 shadow-xl shadow-black/10 backdrop-blur-md ${isGrid ? "grid grid-cols-2 gap-1 min-w-[280px]" : "min-w-[180px]"
             }`}
         >
-          {items.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => {
-                scrollToSection(item.href);
-                setOpen(false);
-              }}
-              className="group/item flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#374151] transition-all duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f]"
-            >
-              <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#d6362f]/40 transition-colors group-hover/item:bg-[#d6362f]" />
-              {item.label}
-            </button>
-          ))}
+          {items.map((item) => {
+            const isHash = item.href.startsWith("#");
+            const className = "group/item flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#374151] transition-all duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f]";
+            const content = (
+              <>
+                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#d6362f]/40 transition-colors group-hover/item:bg-[#d6362f]" />
+                {item.label}
+              </>
+            );
+
+            return isHash ? (
+              <button
+                key={item.label}
+                onClick={() => {
+                  scrollToSection(item.href);
+                  setOpen(false);
+                }}
+                className={className}
+              >
+                {content}
+              </button>
+            ) : (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className={className}
+              >
+                {content}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -229,33 +248,29 @@ function DesktopNavLink({
   return isHash ? (
     <button
       onClick={() => scrollToSection(href)}
-      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${
-        isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
-      }`}
+      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
+        }`}
     >
       {icons[label]}
       {label}
       <span
-        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
-          isActive ? "w-full opacity-100" : "w-0 opacity-0"
-        }`}
+        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${isActive ? "w-full opacity-100" : "w-0 opacity-0"
+          }`}
       />
     </button>
   ) : (
-    <a
+    <Link
       href={href}
-      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${
-        isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
-      }`}
+      className={`relative flex items-center gap-1.5 py-1 text-sm font-medium transition-colors duration-200 ${isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
+        }`}
     >
       {icons[label]}
       {label}
       <span
-        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
-          isActive ? "w-full opacity-100" : "w-0 opacity-0"
-        }`}
+        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${isActive ? "w-full opacity-100" : "w-0 opacity-0"
+          }`}
       />
-    </a>
+    </Link>
   );
 }
 
@@ -397,37 +412,64 @@ export default function Navbar() {
                     }`}
                 >
                   <div className={`mb-3 ml-2 ${item.label === "Programs" ? "grid grid-cols-2 gap-1" : "flex flex-col gap-1"}`}>
-                    {item.items.map((sub) => (
-                      <button
-                        key={sub.label}
-                        onClick={() => {
-                          scrollToSection(sub.href);
-                          setMenuOpen(false);
-                        }}
-                        className={`rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f] ${"#" + activeSection === sub.href
-                            ? "bg-[#d6362f]/8 font-semibold text-[#d6362f]"
-                            : "text-[#374151]"
-                          }`}
-                      >
-                        {sub.label}
-                      </button>
-                    ))}
+                    {item.items.map((sub) => {
+                      const isHash = sub.href.startsWith("#");
+                      const className = `rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f] ${"#" + activeSection === sub.href
+                          ? "bg-[#d6362f]/8 font-semibold text-[#d6362f]"
+                          : "text-[#374151]"
+                          }`;
+
+                      return isHash ? (
+                        <button
+                          key={sub.label}
+                          onClick={() => {
+                            scrollToSection(sub.href);
+                            setMenuOpen(false);
+                          }}
+                          className={className}
+                        >
+                          {sub.label}
+                        </button>
+                      ) : (
+                        <Link
+                          key={sub.label}
+                          href={sub.href}
+                          onClick={() => setMenuOpen(false)}
+                          className={className}
+                        >
+                          {sub.label}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
             ) : (
-              <button
-                key={item.label}
-                onClick={() => {
-                  scrollToSection(item.href);
-                  setMenuOpen(false);
-                }}
-                className={`flex items-center gap-2 border-b border-black/5 py-3.5 text-left font-semibold transition-colors duration-150 hover:text-[#d6362f] ${"#" + activeSection === item.href ? "text-[#d6362f]" : ""
-                  }`}
-              >
-                {icons[item.label]}
-                {item.label}
-              </button>
+              item.href.startsWith("#") ? (
+                <button
+                  key={item.label}
+                  onClick={() => {
+                    scrollToSection(item.href);
+                    setMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-2 border-b border-black/5 py-3.5 text-left font-semibold transition-colors duration-150 hover:text-[#d6362f] ${"#" + activeSection === item.href ? "text-[#d6362f]" : ""
+                    }`}
+                >
+                  {icons[item.label]}
+                  {item.label}
+                </button>
+              ) : (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-2 border-b border-black/5 py-3.5 text-left font-semibold transition-colors duration-150 hover:text-[#d6362f] ${"#" + activeSection === item.href ? "text-[#d6362f]" : ""
+                    }`}
+                >
+                  {icons[item.label]}
+                  {item.label}
+                </Link>
+              )
             )
           )}
 
