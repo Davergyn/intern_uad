@@ -88,6 +88,23 @@ export async function getActiveProgramBySlug(slug: string) {
   return data as ProgramRow | null;
 }
 
+export async function getActiveProgramImagesBySlug(slug: string) {
+  const { data, error } = await createServerSupabaseClient()
+    .from("programs")
+    .select("id,title,slug,description,benefits,image_1_url,image_2_url,is_active,created_at")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .not("image_1_url", "is", null)
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(`Failed to fetch program images ${slug}:`, error.message);
+    return [];
+  }
+
+  return (data ?? []) as ProgramRow[];
+}
+
 export async function getActiveTrainers() {
   const { data, error } = await createServerSupabaseClient()
     .from("trainers")
