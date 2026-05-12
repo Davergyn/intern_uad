@@ -1,4 +1,3 @@
-'use client';
 import React from "react";
 import Navbar from "./components/navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
