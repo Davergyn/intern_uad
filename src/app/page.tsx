@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 import Navbar from "./components/navbar";
 import UpcomingEvents from "./main_page/upcoming_events";
@@ -44,9 +45,11 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
             </p>
 
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:flex-wrap">
-              <button className="w-full rounded-md bg-[#cf2f2a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-[#b92924] sm:w-auto">
-                GET YOUR JOURNEY →
-              </button>
+              <Link href="/auth/login">
+                <button className="w-full rounded-md bg-[#cf2f2a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-[#b92924] sm:w-auto">
+                  GET YOUR JOURNEY →
+                </button>
+              </Link>
 
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">

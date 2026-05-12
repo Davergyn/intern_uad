@@ -111,7 +111,18 @@ export async function getActiveMaterials() {
     .order("title", { ascending: true });
 
   if (error) {
-    console.error("Failed to fetch materials:", error.message);
+    // Supabase may return a schema cache error when the table doesn't exist in the
+    // connected database. Log a friendly warning with guidance instead of an
+    // alarming console.error to reduce developer confusion during dev.
+    const msg = String(error.message || error);
+    if (msg.includes("Could not find the table") || msg.includes("schema cache")) {
+      console.warn(
+        "Materials table not found in Supabase. Run the project's schema or create `public.materials` in your Supabase project. Returning empty list.",
+      );
+    } else {
+      console.error("Failed to fetch materials:", msg);
+    }
+
     return [];
   }
 
