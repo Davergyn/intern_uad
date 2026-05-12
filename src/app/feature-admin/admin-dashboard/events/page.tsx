@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { CalendarDays, Clock, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import type { DeliveryMode, EventFormValues, EventRow, EventType } from "@/types/database";
+import PastEventsPanel from "./past_events";
 
 const TYPE_OPTIONS: EventType[] = ["webinar", "workshop", "seminar", "training"];
 const DELIVERY_OPTIONS: DeliveryMode[] = ["online", "face_to_face", "hybrid"];
@@ -494,6 +495,8 @@ export default function ManageEventsPage() {
         </div>
         Operasi admin berjalan melalui <code className="rounded bg-slate-100 px-1.5 py-0.5">/api/admin/events</code> agar <code className="rounded bg-slate-100 px-1.5 py-0.5">SUPABASE_SERVICE_ROLE_KEY</code> tetap berada di server.
       </div>
+
+      <PastEventsPanel />
     </div>
   );
 }
