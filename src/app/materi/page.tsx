@@ -8,15 +8,25 @@ function MaterialCard({ item }: { item: MaterialRow }) {
   return (
     <article className="flex min-h-[380px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.03)]">
       <div className="flex h-[200px] w-full flex-shrink-0 items-center justify-center overflow-hidden bg-[#f3f4f6]">
-        {item.thumbnail_url ? (
-          <img src={item.thumbnail_url} alt={item.title} className="h-full w-full object-cover" />
+        {item.cover_url ? (
+          <img
+            src={item.cover_url}
+            alt={item.title}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <BookOpen className="h-12 w-12 text-[#9ca3af]" />
         )}
       </div>
       <div className="flex flex-1 flex-col p-6">
-        <h2 className="mb-3 line-clamp-3 text-[1.05rem] leading-snug text-[#4b5563]">{item.title}</h2>
-        {item.description && <p className="line-clamp-3 text-sm leading-6 text-slate-500">{item.description}</p>}
+        <h2 className="mb-3 line-clamp-3 text-[1.05rem] leading-snug text-[#4b5563]">
+          {item.title}
+        </h2>
+        {item.description && (
+          <p className="line-clamp-3 text-sm leading-6 text-slate-500">
+            {item.description}
+          </p>
+        )}
         <div className="mt-auto pt-6">
           <a
             href={item.link_url || "#"}
@@ -49,7 +59,8 @@ export default async function MateriPage() {
               Belajar tanpa batas. Pilih materimu, mulai langkah besarmu.
             </p>
             <p className="text-[1.05rem] text-[#4b5563]">
-              Dari pemula hingga profesional, semua yang kamu butuhkan ada di sini.
+              Dari pemula hingga profesional, semua yang kamu butuhkan ada di
+              sini.
             </p>
           </div>
         </div>
