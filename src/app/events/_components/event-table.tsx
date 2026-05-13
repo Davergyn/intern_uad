@@ -26,12 +26,23 @@ const DELIVERY_BADGE: Record<DeliveryMode, string> = {
   hybrid: "bg-indigo-50 text-indigo-600",
 };
 
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(`${date}T00:00:00`));
+function formatDate(dateString?: string | null) {
+  if (!dateString) return "-";
+  try {
+    // Ambil 10 karakter pertama (YYYY-MM-DD) agar aman dari format ISO Z/T
+    const cleanDate = dateString.split("T")[0];
+    const date = new Date(`${cleanDate}T00:00:00`);
+    
+    if (isNaN(date.getTime())) return "-";
+
+    return new Intl.DateTimeFormat("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  } catch (e) {
+    return "-";
+  }
 }
 
 function EmptyState({ message }: { message: string }) {

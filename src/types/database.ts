@@ -47,7 +47,7 @@ export type MaterialRow = {
   title: string;
   description: string | null;
   link_url: string | null;
-  thumbnail_url: string | null;
+  cover_url: string | null;
   is_active: boolean;
   created_at?: string;
 };

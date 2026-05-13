@@ -192,10 +192,16 @@ export default function ManageProgramsPage() {
 
         showSuccess("Foto program berhasil diperbarui.");
       } else {
-        // INSERT
+        // INSERT - Auto-generate slug dengan kombinasi kategori + timestamp
+        const generatedSlug = `${form.kategori}-${Date.now()}`;
+        const insertPayload = {
+          ...payload,
+          slug: generatedSlug,
+        };
+
         const { error: insertError } = await supabase
           .from("programs")
-          .insert(payload);
+          .insert(insertPayload);
 
         if (insertError) {
           throw new Error(insertError.message);
