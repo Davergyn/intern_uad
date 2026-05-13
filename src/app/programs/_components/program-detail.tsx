@@ -20,10 +20,10 @@ export default async function ProgramDetail({
 }: ProgramDetailProps) {
   const programImages = await getActiveProgramImagesBySlug(slug);
   const images = programImages
-    .filter((program) => Boolean(program.image_1_url))
+    .filter((program) => Boolean(program.image_url))
     .map((program) => ({
       id: program.id,
-      imageUrl: program.image_1_url as string,
+      imageUrl: program.image_url as string,
       title: program.title || fallbackTitle,
     }));
 
