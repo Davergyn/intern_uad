@@ -19,16 +19,18 @@ export type EventRow = {
 
 export type EventFormValues = Omit<EventRow, "id" | "created_at">;
 
+export type ProgramKategori =
+  | "training-of-trainer"
+  | "seminar"
+  | "workshop"
+  | "partnership";
+
 export type ProgramRow = {
   id: number;
   title: string;
-  slug: string;
-  description: string | null;
-  benefits: string | null;
-  image_1_url: string | null;
-  image_2_url: string | null;
+  kategori: ProgramKategori;
+  image_url: string | null;
   is_active: boolean;
-  created_at?: string;
 };
 
 export type TrainerRow = {
@@ -45,7 +47,16 @@ export type MaterialRow = {
   title: string;
   description: string | null;
   link_url: string | null;
-  thumbnail_url: string | null;
+  cover_url: string | null;
+  is_active: boolean;
+  created_at?: string;
+};
+
+export type PartnerRow = {
+  id: number;
+  name: string;
+  category: string;
+  logo_url: string | null;
   is_active: boolean;
   created_at?: string;
 };

@@ -21,7 +21,7 @@ export default function HeroSection() {
           <h1 className="mt-8 max-w-xl text-5xl font-black leading-[1.05] tracking-tight xl:text-6xl">
             Mulai Perjalanan
             <br />
-            Digital Anda Hari ini.
+            Digital Anda Hari Ini.
           </h1>
 
           <p className="mt-7 max-w-xl text-2xl leading-relaxed text-white/95 xl:text-3xl">

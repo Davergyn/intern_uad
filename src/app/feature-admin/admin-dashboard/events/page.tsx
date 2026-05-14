@@ -1,11 +1,30 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { CalendarDays, Clock, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
-import type { DeliveryMode, EventFormValues, EventRow, EventType } from "@/types/database";
-import PastEventsPanel from "./past_events";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
+import type {
+  DeliveryMode,
+  EventFormValues,
+  EventRow,
+  EventType,
+} from "@/types/database";
 
-const TYPE_OPTIONS: EventType[] = ["webinar", "workshop", "seminar", "training"];
+const TYPE_OPTIONS: EventType[] = [
+  "webinar",
+  "workshop",
+  "seminar",
+  "training",
+];
 const DELIVERY_OPTIONS: DeliveryMode[] = ["online", "face_to_face", "hybrid"];
 
 const TYPE_COLOR: Record<EventType, string> = {
@@ -58,6 +77,7 @@ function formatDate(date: string) {
   }).format(parsedDate);
 }
 
+
 function formatPrice(price: number | null) {
   if (!price) return "Gratis";
   return new Intl.NumberFormat("id-ID", {
@@ -65,6 +85,60 @@ function formatPrice(price: number | null) {
     currency: "IDR",
     maximumFractionDigits: 0,
   }).format(price);
+}
+
+// Determine event status (Past / Upcoming) berdasarkan tanggal
+function getEventStatus(eventDate: string | null | undefined): {
+  status: "Past" | "Upcoming";
+  bgColor: string;
+  textColor: string;
+  borderColor: string;
+  icon: "check" | "clock";
+} {
+  if (!eventDate) {
+    return {
+      status: "Upcoming",
+      bgColor: "bg-amber-50",
+      textColor: "text-amber-600",
+      borderColor: "border-amber-200/60",
+      icon: "clock",
+    };
+  }
+
+  try {
+    // Get today's date dalam format YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0];
+    const eventDateOnly = String(eventDate).split("T")[0]; // Extract YYYY-MM-DD
+
+    // Bandingkan tanggal
+    if (eventDateOnly < today) {
+      // Past event
+      return {
+        status: "Past",
+        bgColor: "bg-emerald-50",
+        textColor: "text-emerald-600",
+        borderColor: "border-emerald-200/60",
+        icon: "check",
+      };
+    } else {
+      // Upcoming event (termasuk hari ini)
+      return {
+        status: "Upcoming",
+        bgColor: "bg-amber-50",
+        textColor: "text-amber-600",
+        borderColor: "border-amber-200/60",
+        icon: "clock",
+      };
+    }
+  } catch {
+    return {
+      status: "Upcoming",
+      bgColor: "bg-amber-50",
+      textColor: "text-amber-600",
+      borderColor: "border-amber-200/60",
+      icon: "clock",
+    };
+  }
 }
 
 export default function ManageEventsPage() {
@@ -84,7 +158,7 @@ export default function ManageEventsPage() {
       (event) =>
         event.title.toLowerCase().includes(keyword) ||
         TYPE_LABEL[event.type].toLowerCase().includes(keyword) ||
-        DELIVERY_LABEL[event.delivery].toLowerCase().includes(keyword)
+        DELIVERY_LABEL[event.delivery].toLowerCase().includes(keyword),
     );
   }, [events, search]);
 
@@ -93,7 +167,10 @@ export default function ManageEventsPage() {
     setError("");
 
     const response = await fetch("/api/admin/events", { cache: "no-store" });
-    const result = (await response.json()) as { data?: EventRow[]; error?: string };
+    const result = (await response.json()) as {
+      data?: EventRow[];
+      error?: string;
+    };
 
     if (!response.ok) {
       setError(result.error || "Gagal memuat event.");
@@ -128,7 +205,9 @@ export default function ManageEventsPage() {
   };
 
   const deleteEvent = async (id: number) => {
-    const response = await fetch(`/api/admin/events?id=${id}`, { method: "DELETE" });
+    const response = await fetch(`/api/admin/events?id=${id}`, {
+      method: "DELETE",
+    });
     const result = (await response.json()) as { error?: string };
     if (!response.ok) throw new Error(result.error || "Gagal menghapus event.");
     await fetchEvents();
@@ -180,7 +259,11 @@ export default function ManageEventsPage() {
       setEditTarget(null);
       setForm(EMPTY_FORM);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Gagal menyimpan event.");
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : "Gagal menyimpan event.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -195,7 +278,11 @@ export default function ManageEventsPage() {
       await deleteEvent(deleteTarget.id);
       setDeleteTarget(null);
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Gagal menghapus event.");
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Gagal menghapus event.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -205,7 +292,10 @@ export default function ManageEventsPage() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search
+            size={15}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+          />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -231,7 +321,9 @@ export default function ManageEventsPage() {
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
           <div>
             <h2 className="font-bold text-slate-800">Daftar Events</h2>
-            <p className="text-xs text-slate-400">Data tersinkron langsung dengan tabel public.events.</p>
+            <p className="text-xs text-slate-400">
+              Data tersinkron langsung dengan tabel public.events.
+            </p>
           </div>
           <span className="text-xs text-slate-400">{filtered.length} data</span>
         </div>
@@ -245,45 +337,86 @@ export default function ManageEventsPage() {
                 <th className="px-6 py-3">Kuota</th>
                 <th className="px-6 py-3">Harga</th>
                 <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3">Masa</th>
                 <th className="px-6 py-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-sm text-slate-400">
+                  <td
+                    colSpan={8}
+                    className="py-12 text-center text-sm text-slate-400"
+                  >
                     <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" />
                     Memuat data event...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-sm text-slate-400">
+                  <td
+                    colSpan={8}
+                    className="py-12 text-center text-sm text-slate-400"
+                  >
                     Tidak ada data event ditemukan.
                   </td>
                 </tr>
               ) : (
                 filtered.map((row) => (
-                  <tr key={row.id} className="transition-colors hover:bg-slate-50">
+                  <tr
+                    key={row.id}
+                    className="transition-colors hover:bg-slate-50"
+                  >
                     <td className="max-w-sm px-6 py-4">
-                      <p className="truncate text-sm font-semibold text-slate-800">{row.title}</p>
+                      <p className="truncate text-sm font-semibold text-slate-800">
+                        {row.title}
+                      </p>
                       <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
                         <Clock size={12} />
-                        {row.start_time?.slice(0, 5) || "--:--"} - {row.end_time?.slice(0, 5) || "--:--"} | {DELIVERY_LABEL[row.delivery]}
+                        {row.start_time?.slice(0, 5) || "--:--"} -{" "}
+                        {row.end_time?.slice(0, 5) || "--:--"} |{" "}
+                        {DELIVERY_LABEL[row.delivery]}
                       </p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TYPE_COLOR[row.type]}`}>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TYPE_COLOR[row.type]}`}
+                      >
                         {TYPE_LABEL[row.type]}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">{formatDate(row.event_date)}</td>
-                    <td className="px-6 py-4 text-sm text-slate-500">{row.quota ?? 0}</td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-600">{formatPrice(row.price)}</td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
+                      {formatDate(row.event_date)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-500">
+                      {row.quota ?? 0}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-600">
+                      {formatPrice(row.price)}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${row.is_published ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${row.is_published ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
+                      >
                         {row.is_published ? "Published" : "Draft"}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {(() => {
+                        const eventStatus = getEventStatus(row.event_date);
+                        return (
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold w-fit border ${eventStatus.bgColor} ${eventStatus.textColor} ${eventStatus.borderColor}`}
+                          >
+                            {eventStatus.icon === "check" ? (
+                              <CheckCircle2 size={13} />
+                            ) : (
+                              <Clock size={13} />
+                            )}
+                            {eventStatus.status}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
@@ -313,24 +446,43 @@ export default function ManageEventsPage() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-label="Tutup modal" onClick={() => setModalOpen(false)} />
-          <form onSubmit={handleSubmit} className="relative max-h-[92vh] w-full max-w-3xl space-y-5 overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+          <button
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            aria-label="Tutup modal"
+            onClick={() => setModalOpen(false)}
+          />
+          <form
+            onSubmit={handleSubmit}
+            className="relative max-h-[92vh] w-full max-w-3xl space-y-5 overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+          >
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-slate-800">{editTarget ? "Edit Event" : "Tambah Event Baru"}</h3>
-                <p className="text-xs text-slate-400">Isi sesuai skema tabel public.events.</p>
+                <h3 className="text-lg font-bold text-slate-800">
+                  {editTarget ? "Edit Event" : "Tambah Event Baru"}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Isi sesuai skema tabel public.events.
+                </p>
               </div>
-              <button type="button" onClick={() => setModalOpen(false)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100">
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
+              >
                 <X size={18} />
               </button>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Judul Event *</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Judul Event *
+                </label>
                 <input
                   value={form.title}
-                  onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, title: e.target.value }))
+                  }
                   required
                   placeholder="Contoh: Keamanan Siber untuk Pemula"
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
@@ -338,10 +490,14 @@ export default function ManageEventsPage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Deskripsi</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Deskripsi
+                </label>
                 <textarea
                   value={form.description ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, description: e.target.value }))
+                  }
                   rows={4}
                   placeholder="Ringkasan event..."
                   className="w-full resize-none rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
@@ -349,10 +505,17 @@ export default function ManageEventsPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Tipe</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Tipe
+                </label>
                 <select
                   value={form.type}
-                  onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as EventType }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      type: e.target.value as EventType,
+                    }))
+                  }
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 >
                   {TYPE_OPTIONS.map((type) => (
@@ -364,10 +527,17 @@ export default function ManageEventsPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Delivery</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Delivery
+                </label>
                 <select
                   value={form.delivery}
-                  onChange={(e) => setForm((f) => ({ ...f, delivery: e.target.value as DeliveryMode }))}
+                  onChange={(e) =>
+                    setForm((f) => ({
+                      ...f,
+                      delivery: e.target.value as DeliveryMode,
+                    }))
+                  }
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 >
                   {DELIVERY_OPTIONS.map((delivery) => (
@@ -379,11 +549,15 @@ export default function ManageEventsPage() {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Tanggal Event *</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Tanggal Event *
+                </label>
                 <input
                   type="date"
                   value={form.event_date}
-                  onChange={(e) => setForm((f) => ({ ...f, event_date: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, event_date: e.target.value }))
+                  }
                   required
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 />
@@ -391,53 +565,73 @@ export default function ManageEventsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Mulai</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                    Mulai
+                  </label>
                   <input
                     type="time"
                     value={form.start_time ?? ""}
-                    onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, start_time: e.target.value }))
+                    }
                     className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Selesai</label>
+                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                    Selesai
+                  </label>
                   <input
                     type="time"
                     value={form.end_time ?? ""}
-                    onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, end_time: e.target.value }))
+                    }
                     className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Kuota</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Kuota
+                </label>
                 <input
                   type="number"
                   min={0}
                   value={form.quota ?? 0}
-                  onChange={(e) => setForm((f) => ({ ...f, quota: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, quota: Number(e.target.value) }))
+                  }
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 />
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Harga</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Harga
+                </label>
                 <input
                   type="number"
                   min={0}
                   value={form.price ?? 0}
-                  onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, price: Number(e.target.value) }))
+                  }
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Thumbnail URL</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-600">
+                  Thumbnail URL
+                </label>
                 <input
                   type="url"
                   value={form.thumbnail_url ?? ""}
-                  onChange={(e) => setForm((f) => ({ ...f, thumbnail_url: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, thumbnail_url: e.target.value }))
+                  }
                   placeholder="https://..."
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 />
@@ -447,15 +641,23 @@ export default function ManageEventsPage() {
                 <input
                   type="checkbox"
                   checked={form.is_published}
-                  onChange={(e) => setForm((f) => ({ ...f, is_published: e.target.checked }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, is_published: e.target.checked }))
+                  }
                   className="h-4 w-4 accent-[#CB2229]"
                 />
-                <span className="text-sm font-semibold text-slate-700">Publikasikan event di landing page</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  Publikasikan event di landing page
+                </span>
               </label>
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setModalOpen(false)} className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100">
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+              >
                 Batal
               </button>
               <button
@@ -473,20 +675,33 @@ export default function ManageEventsPage() {
 
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-black/50 backdrop-blur-sm" aria-label="Tutup modal hapus" onClick={() => setDeleteTarget(null)} />
+          <button
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            aria-label="Tutup modal hapus"
+            onClick={() => setDeleteTarget(null)}
+          />
           <div className="relative w-full max-w-sm space-y-4 rounded-2xl bg-white p-6 text-center shadow-2xl">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-100">
               <Trash2 size={24} className="text-[#CB2229]" />
             </div>
             <div>
               <h3 className="font-bold text-slate-800">Hapus Event?</h3>
-              <p className="mt-1 text-sm text-slate-500">{deleteTarget.title}</p>
+              <p className="mt-1 text-sm text-slate-500">
+                {deleteTarget.title}
+              </p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 rounded-xl border border-slate-200 py-2 text-sm font-medium transition-colors hover:bg-slate-50">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                className="flex-1 rounded-xl border border-slate-200 py-2 text-sm font-medium transition-colors hover:bg-slate-50"
+              >
                 Batal
               </button>
-              <button onClick={handleDelete} disabled={isSaving} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#CB2229] py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-70">
+              <button
+                onClick={handleDelete}
+                disabled={isSaving}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#CB2229] py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-70"
+              >
                 {isSaving && <Loader2 size={15} className="animate-spin" />}
                 Hapus
               </button>
@@ -500,10 +715,16 @@ export default function ManageEventsPage() {
           <CalendarDays size={16} className="text-[#CB2229]" />
           Catatan Supabase
         </div>
-        Operasi admin berjalan melalui <code className="rounded bg-slate-100 px-1.5 py-0.5">/api/admin/events</code> agar <code className="rounded bg-slate-100 px-1.5 py-0.5">SUPABASE_SERVICE_ROLE_KEY</code> tetap berada di server.
+        Operasi admin berjalan melalui{" "}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5">
+          /api/admin/events
+        </code>{" "}
+        agar{" "}
+        <code className="rounded bg-slate-100 px-1.5 py-0.5">
+          SUPABASE_SERVICE_ROLE_KEY
+        </code>{" "}
+        tetap berada di server.
       </div>
-
-      <PastEventsPanel />
     </div>
   );
 }

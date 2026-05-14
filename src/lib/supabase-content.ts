@@ -72,20 +72,41 @@ export async function getPastEvents() {
   return (data ?? []) as EventRow[];
 }
 
-export async function getActiveProgramBySlug(slug: string) {
+// Fungsi ini disesuaikan: parameter 'slug' dipetakan untuk mencari di kolom 'kategori'
+export async function getActiveProgramBySlug(category: string) {
   const { data, error } = await createServerSupabaseClient()
     .from("programs")
     .select("*")
-    .eq("slug", slug)
+    .eq("kategori", category) // Menggunakan kolom ENUM 'kategori'
     .eq("is_active", true)
+    .limit(1)
     .maybeSingle();
 
   if (error) {
-    console.error(`Failed to fetch program ${slug}:`, error.message);
+    console.error(`Failed to fetch program ${category}:`, error.message);
     return null;
   }
 
   return data as ProgramRow | null;
+}
+
+// Fungsi ini diperbaiki total untuk mengambil daftar slide foto per kategori
+export async function getActiveProgramImagesBySlug(category: string) {
+  const { data, error } = await createServerSupabaseClient()
+    .from("programs")
+    // Mengambil kolom yang TEPAT sesuai skema baru
+    .select("id, title, kategori, image_url, is_active") 
+    .eq("kategori", category) // Filter berdasarkan ENUM kategori
+    .eq("is_active", true)
+    .not("image_url", "is", null) // Validasi kolom gambar baru
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(`Failed to fetch program images for ${category}:`, error.message);
+    return [];
+  }
+
+  return (data ?? []) as ProgramRow[];
 }
 
 export async function getActiveTrainers() {
@@ -111,18 +132,7 @@ export async function getActiveMaterials() {
     .order("title", { ascending: true });
 
   if (error) {
-    // Supabase may return a schema cache error when the table doesn't exist in the
-    // connected database. Log a friendly warning with guidance instead of an
-    // alarming console.error to reduce developer confusion during dev.
-    const msg = String(error.message || error);
-    if (msg.includes("Could not find the table") || msg.includes("schema cache")) {
-      console.warn(
-        "Materials table not found in Supabase. Run the project's schema or create `public.materials` in your Supabase project. Returning empty list.",
-      );
-    } else {
-      console.error("Failed to fetch materials:", msg);
-    }
-
+    console.error("Failed to fetch materials:", error.message);
     return [];
   }
 
