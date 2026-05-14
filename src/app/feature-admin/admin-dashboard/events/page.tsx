@@ -44,11 +44,18 @@ const EMPTY_FORM: EventFormValues = {
 
 function formatDate(date: string) {
   if (!date) return "-";
+
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00`) : new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "-";
+  }
+
   return new Intl.DateTimeFormat("id-ID", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(parsedDate);
 }
 
 function formatPrice(price: number | null) {
