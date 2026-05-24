@@ -61,23 +61,22 @@ const EMPTY_FORM: EventFormValues = {
   is_published: true,
 };
 
-function formatDate(dateString?: string | null) {
-  if (!dateString) return "-";
-  try {
-    const cleanDate = dateString.split("T")[0];
-    const date = new Date(`${cleanDate}T00:00:00`);
+function formatDate(date: string) {
+  if (!date) return "-";
 
-    if (isNaN(date.getTime())) return "-";
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00`) : new Date(date);
 
-    return new Intl.DateTimeFormat("id-ID", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    }).format(date);
-  } catch (e) {
+  if (Number.isNaN(parsedDate.getTime())) {
     return "-";
   }
+
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(parsedDate);
 }
+
 
 function formatPrice(price: number | null) {
   if (!price) return "Gratis";

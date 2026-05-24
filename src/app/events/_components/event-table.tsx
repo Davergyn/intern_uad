@@ -32,7 +32,7 @@ function formatDate(dateString?: string | null) {
     // Ambil 10 karakter pertama (YYYY-MM-DD) agar aman dari format ISO Z/T
     const cleanDate = dateString.split("T")[0];
     const date = new Date(`${cleanDate}T00:00:00`);
-    
+
     if (isNaN(date.getTime())) return "-";
 
     return new Intl.DateTimeFormat("id-ID", {
