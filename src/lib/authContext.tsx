@@ -28,6 +28,16 @@ const AUTH_EMAIL_KEY = "authEmail";
 const AUTH_ROLE_KEY = "authRole";
 
 function findAuthRecord(email: string, password: string, role: AuthRole) {
+  if (typeof window !== "undefined") {
+    const savedPassword = localStorage.getItem(`password_${email}`);
+    if (savedPassword) {
+      const record = AUTH_USERS.find((user) => user.email === email && user.role === role);
+      if (record && savedPassword === password) {
+        return record;
+      }
+      return undefined; // Password changed, old one in JSON should not work
+    }
+  }
   return AUTH_USERS.find(
     (user) => user.email === email && user.password === password && user.role === role,
   );
