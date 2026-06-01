@@ -1,13 +1,10 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { Check } from "lucide-react";
 import ProgramImageSlider from "./program-image-slider";
-
-// TODO: Implement getActiveProgramImagesBySlug with server route when ready
-type ProgramImage = {
-  id: string;
-  image_url: string | null;
-  title?: string;
-};
+import { db } from "@/db";
+import { programs } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+import type { ProgramKategori, ProgramRow } from "@/types/database";
 
 type ProgramDetailProps = {
   slug: string;
@@ -22,13 +19,21 @@ export default async function ProgramDetail({
   fallbackDescription,
   fallbackBenefits,
 }: ProgramDetailProps) {
-  // TODO: Implement with server route when ready
-  const programImages: ProgramImage[] = []; // Placeholder: awaiting server route implementation
+  const programImages: ProgramRow[] = await db
+    .select()
+    .from(programs)
+    .where(
+      and(
+        eq(programs.kategori, slug as ProgramKategori),
+        eq(programs.isActive, true),
+      ),
+    );
+
   const images = programImages
-    .filter((program) => Boolean(program.image_url))
+    .filter((program) => Boolean(program.imageUrl))
     .map((program) => ({
       id: program.id,
-      imageUrl: program.image_url as string,
+      imageUrl: program.imageUrl as string,
       title: program.title || fallbackTitle,
     }));
 

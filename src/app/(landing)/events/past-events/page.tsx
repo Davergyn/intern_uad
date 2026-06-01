@@ -1,11 +1,18 @@
-﻿import { EventTable } from "../_components/event-table";
-
-// TODO: Implement getPastEvents with server route when ready
+import { EventTable } from "../_components/event-table";
+import { db } from "@/db";
+import { events } from "@/db/schema";
+import { lt, eq, and } from "drizzle-orm";
+import type { EventRow } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
 export default async function PastEventsPage() {
-  const pastEvents = []; // Placeholder: awaiting server route implementation
+  const today = new Date().toISOString().split("T")[0];
+
+  const pastEvents: EventRow[] = await db
+    .select()
+    .from(events)
+    .where(and(lt(events.eventDate, today), eq(events.isPublished, true)));
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">

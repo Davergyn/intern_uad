@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Lexend } from "next/font/google";
-import "./style/style.css";
+import "./style.css";
 import { AuthProvider } from "@/lib/authContext";
 // import Navbar from "@/components/Navbar";
 

@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import Link from "next/link";
 import { db } from "@/db";
 import { events, programs } from "@/db/schema";
@@ -374,7 +374,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
           )}
         </div>
       </section>
-      {/* --- 4. OUR PARTNERS SECTION (INFINITE MARQUEE LOGO DINAMIS) --- */}
+    {/* --- 4. OUR PARTNERS SECTION (INFINITE MARQUEE LOGO DINAMIS) --- */}
       <section
         id="our-partners"
         className="mx-auto w-full max-w-6xl overflow-hidden px-4 py-12 text-center sm:px-6 lg:px-8"
@@ -395,20 +395,24 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
               animasi mulus ke kiri. Kita render array 2 kali agar looping-nya infinite.
             */
             <div
-              className="flex w-max shrink-0 items-center gap-16 sm:gap-24"
+              className="flex w-max shrink-0 items-center gap-12 sm:gap-20"
               style={{
-                animation: "marquee 25s linear infinite",
+                animation: "marquee 5s linear infinite",
               }}
             >
               {[...partners, ...partners].map((p, index) => (
-                <img
-                  // Gunakan kombinasi id dan index agar key tetap unik saat diduplikasi
+                <div
                   key={`${p.id}-${index}`}
-                  src={p.image_url || ""}
-                  alt={p.title || "Partner Logo"}
-                  // Ukuran diperbesar (h-16 / h-20) dengan efek hover berwarna
-                  className="h-16 w-auto shrink-0 object-contain transition-all duration-300 filter grayscale hover:filter-none sm:h-20"
-                />
+                  // kontainer 
+                  className="flex h-32 w-32 shrink-0 items-center justify-center p-4 transition-all duration-300 sm:h-48 sm:w-48"
+                >
+                  <img
+                    src={p.imageUrl || ""}
+                    alt={p.title || "Partner Logo"}
+                    // Logo menyesuaikan ukuran kontainer persegi tanpa distorsi
+                    className="h-full w-full object-contain filter grayscale transition-all duration-300 hover:filter-none"
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -432,7 +436,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
             -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
           }
         `}</style>
-      </section>{" "}
+      </section>
     </main>
   );
 }

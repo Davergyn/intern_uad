@@ -12,27 +12,20 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-// TODO: Import TrainerRow type from new database schema when ready
-type TrainerRow = {
-  id: number;
-  name: string;
-  role_title?: string | null;
-  photo_url?: string | null;
-  is_active: boolean;
-};
+import type { TrainerRow } from "@/types/database";
 
 type TrainerFormData = {
   name: string;
-  role_title: string;
-  photo_url: string;
-  is_active: boolean;
+  roleTitle: string;
+  photoUrl: string;
+  isActive: boolean;
 };
 
 const EMPTY_FORM: TrainerFormData = {
   name: "",
-  role_title: "",
-  photo_url: "",
-  is_active: true,
+  roleTitle: "",
+  photoUrl: "",
+  isActive: true,
 };
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -109,26 +102,27 @@ export default function ManageTrainersPage() {
       (trainer) =>
         !keyword ||
         trainer.name.toLowerCase().includes(keyword) ||
-        (trainer.role_title ?? "").toLowerCase().includes(keyword),
+        (trainer.roleTitle ?? "").toLowerCase().includes(keyword),
     );
   }, [trainers, search]);
 
-  // Fetch trainers dari Supabase
+  // Fetch trainers dari API route (Drizzle)
   const fetchTrainers = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from("trainers")
-        .select("id,name,role_title,photo_url,is_active")
-        .order("id", { ascending: false });
+      const response = await fetch("/api/admin/trainers", { cache: "no-store" });
+      const result = (await response.json()) as {
+        data?: TrainerRow[];
+        error?: string;
+      };
 
-      if (fetchError) {
-        throw new Error(fetchError.message);
+      if (!response.ok) {
+        throw new Error(result.error || "Gagal memuat data trainer.");
       }
 
-      setTrainers((data ?? []) as TrainerRow[]);
+      setTrainers(result.data ?? []);
     } catch (err) {
       setTrainers([]);
       setError(getErrorMessage(err, "Gagal memuat data trainer."));
@@ -160,9 +154,9 @@ export default function ManageTrainersPage() {
     setEditTarget(trainer);
     setForm({
       name: trainer.name,
-      role_title: trainer.role_title ?? "",
-      photo_url: trainer.photo_url ?? "",
-      is_active: trainer.is_active,
+      roleTitle: trainer.roleTitle ?? "",
+      photoUrl: trainer.photoUrl ?? "",
+      isActive: trainer.isActive ?? true,
     });
     setModalOpen(true);
   };
@@ -175,7 +169,7 @@ export default function ManageTrainersPage() {
       return;
     }
 
-    if (form.photo_url && !isValidImageUrl(form.photo_url)) {
+    if (form.photoUrl && !isValidImageUrl(form.photoUrl)) {
       setError("URL Foto Profil tidak valid.");
       return;
     }
@@ -185,36 +179,30 @@ export default function ManageTrainersPage() {
     setSuccess("");
 
     try {
-      // Payload hanya berisi: name, role_title, photo_url, is_active
       const payload = {
         name: form.name.trim(),
-        role_title: (form.role_title?.trim() || null) as string | null,
-        photo_url: (form.photo_url?.trim() || null) as string | null,
-        is_active: form.is_active,
+        roleTitle: form.roleTitle?.trim() || null,
+        photoUrl: form.photoUrl?.trim() || null,
+        isActive: form.isActive,
       };
 
       if (editTarget) {
-        // UPDATE
-        const { error: updateError } = await supabase
-          .from("trainers")
-          .update(payload)
-          .eq("id", editTarget.id);
-
-        if (updateError) {
-          throw new Error(updateError.message);
-        }
-
+        const response = await fetch("/api/admin/trainers", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editTarget.id, ...payload }),
+        });
+        const result = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Gagal mengubah trainer.");
         showSuccess("Trainer berhasil diperbarui.");
       } else {
-        // INSERT
-        const { error: insertError } = await supabase
-          .from("trainers")
-          .insert(payload);
-
-        if (insertError) {
-          throw new Error(insertError.message);
-        }
-
+        const response = await fetch("/api/admin/trainers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Gagal menambah trainer.");
         showSuccess("Trainer berhasil ditambahkan.");
       }
 
@@ -237,14 +225,11 @@ export default function ManageTrainersPage() {
     setSuccess("");
 
     try {
-      const { error: deleteError } = await supabase
-        .from("trainers")
-        .delete()
-        .eq("id", deleteTarget.id);
-
-      if (deleteError) {
-        throw new Error(deleteError.message);
-      }
+      const response = await fetch(`/api/admin/trainers?id=${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Gagal menghapus trainer.");
 
       setDeleteTarget(null);
       showSuccess("Trainer berhasil dihapus.");
@@ -315,7 +300,7 @@ export default function ManageTrainersPage() {
             >
               <AvatarDisplay
                 name={trainer.name}
-                url={trainer.photo_url}
+                url={trainer.photoUrl}
                 size="lg"
               />
               <div className="flex-1">
@@ -323,20 +308,20 @@ export default function ManageTrainersPage() {
                   {trainer.name}
                 </h3>
                 <p className="text-xs text-slate-500 mt-1">
-                  {trainer.role_title || "—"}
+                  {trainer.roleTitle || "—"}
                 </p>
               </div>
 
               {/* Status Badge */}
               <div
                 className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
-                  trainer.is_active
+                  trainer.isActive
                     ? "bg-emerald-50 text-emerald-600"
                     : "bg-slate-100 text-slate-500"
                 }`}
               >
-                {trainer.is_active ? <Eye size={12} /> : <EyeOff size={12} />}
-                {trainer.is_active ? "Aktif" : "Nonaktif"}
+                {trainer.isActive ? <Eye size={12} /> : <EyeOff size={12} />}
+                {trainer.isActive ? "Aktif" : "Nonaktif"}
               </div>
 
               {/* Action Buttons */}
@@ -395,7 +380,7 @@ export default function ManageTrainersPage() {
 
             {/* Preview Avatar */}
             <div className="flex justify-center">
-              <AvatarDisplay name={form.name} url={form.photo_url} size="lg" />
+              <AvatarDisplay name={form.name} url={form.photoUrl} size="lg" />
             </div>
 
             <div className="space-y-4">
@@ -421,9 +406,9 @@ export default function ManageTrainersPage() {
                   Jabatan / Role
                 </label>
                 <input
-                  value={form.role_title}
+                  value={form.roleTitle}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, role_title: e.target.value }))
+                    setForm((prev) => ({ ...prev, roleTitle: e.target.value }))
                   }
                   placeholder="Contoh: Senior Trainer .id Academy"
                   className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
@@ -437,17 +422,17 @@ export default function ManageTrainersPage() {
                 </label>
                 <input
                   type="url"
-                  value={form.photo_url}
+                  value={form.photoUrl}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, photo_url: e.target.value }))
+                    setForm((prev) => ({ ...prev, photoUrl: e.target.value }))
                   }
                   placeholder="https://... (kosongkan untuk avatar inisial)"
                   className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
                 />
-                {form.photo_url && isValidImageUrl(form.photo_url) && (
+                {form.photoUrl && isValidImageUrl(form.photoUrl) && (
                   <div className="mt-2 flex justify-center rounded-xl bg-slate-50 p-3">
                     <img
-                      src={form.photo_url}
+                      src={form.photoUrl}
                       alt="Preview"
                       className="max-h-40 max-w-full rounded-lg object-cover"
                     />
@@ -462,15 +447,15 @@ export default function ManageTrainersPage() {
                 </label>
                 <label className="flex min-h-10 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5">
                   <span className="text-sm font-semibold text-slate-700">
-                    {form.is_active ? "Aktif" : "Nonaktif"}
+                    {form.isActive ? "Aktif" : "Nonaktif"}
                   </span>
                   <input
                     type="checkbox"
-                    checked={form.is_active}
+                    checked={form.isActive}
                     onChange={(e) =>
                       setForm((prev) => ({
                         ...prev,
-                        is_active: e.target.checked,
+                        isActive: e.target.checked,
                       }))
                     }
                     className="h-4 w-4 accent-[#CB2229]"

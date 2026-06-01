@@ -1,20 +1,16 @@
-﻿import { Users } from "lucide-react";
-
-// TODO: Import TrainerRow type from new database schema when ready
-type TrainerRow = {
-  id: string;
-  name: string;
-  photo_url?: string;
-  role_title?: string;
-};
+import { Users } from "lucide-react";
+import { db } from "@/db";
+import { trainers } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import type { TrainerRow } from "@/types/database";
 
 function TrainerCard({ trainer }: { trainer: TrainerRow }) {
   return (
     <article className="flex min-h-[340px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
       <div className="flex h-[240px] w-full items-end justify-center overflow-hidden bg-[#fafafa]">
-        {trainer.photo_url ? (
+        {trainer.photoUrl ? (
           <img
-            src={trainer.photo_url}
+            src={trainer.photoUrl}
             alt={trainer.name}
             className="h-full w-full object-cover object-top"
           />
@@ -29,16 +25,18 @@ function TrainerCard({ trainer }: { trainer: TrainerRow }) {
           {trainer.name}
         </h2>
         <p className="text-[0.82rem] text-gray-500">
-          {trainer.role_title || "Trainer .id Academy"}
+          {trainer.roleTitle || "Trainer .id Academy"}
         </p>
       </div>
     </article>
   );
 }
 
-// TODO: Implement getActiveTrainers with server route when ready
 export default async function TrainersPage() {
-  const trainers: TrainerRow[] = []; // Placeholder: awaiting server route implementation
+  const trainerList: TrainerRow[] = await db
+    .select()
+    .from(trainers)
+    .where(eq(trainers.isActive, true));
 
   return (
     <main className="min-h-screen bg-[#f9fafb] text-[#111827]">
@@ -56,13 +54,13 @@ export default async function TrainersPage() {
           </div>
         </div>
 
-        {trainers.length === 0 ? (
+        {trainerList.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
             Belum ada trainer aktif yang tersedia.
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {trainers.map((trainer) => (
+            {trainerList.map((trainer) => (
               <TrainerCard key={trainer.id} trainer={trainer} />
             ))}
           </div>

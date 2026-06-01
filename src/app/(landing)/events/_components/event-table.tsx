@@ -135,20 +135,20 @@ export function EventTable({
             return (
               <tr key={event.id} className="border-b border-gray-100 transition-colors last:border-b-0 hover:bg-[#f9fafb]">
                 <td className="whitespace-nowrap px-6 py-4">
-                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${TYPE_BADGE[event.type]}`}>
-                    {TYPE_LABEL[event.type]}
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${TYPE_BADGE[event.eventType]}`}>
+                    {TYPE_LABEL[event.eventType]}
                   </span>
                 </td>
                 <td className="max-w-[420px] px-6 py-4 text-[0.95rem] font-semibold leading-7 text-[#1f2937]">
                   {event.title}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4 text-[0.95rem] text-[#6b7280]">
-                  {formatDate(event.event_date)}
+                  {formatDate(event.eventDate)}
                 </td>
                 <td className="whitespace-nowrap px-6 py-4">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${DELIVERY_BADGE[event.delivery]}`}>
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${DELIVERY_BADGE[event.deliveryMode]}`}>
                     <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                    {DELIVERY_LABEL[event.delivery]}
+                    {DELIVERY_LABEL[event.deliveryMode]}
                   </span>
                 </td>
                 <td className="whitespace-nowrap px-6 py-4">

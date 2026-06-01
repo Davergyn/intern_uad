@@ -50,15 +50,15 @@ const DELIVERY_LABEL: Record<DeliveryMode, string> = {
 const EMPTY_FORM: EventFormValues = {
   title: "",
   description: "",
-  type: "webinar",
-  delivery: "online",
-  event_date: "",
-  start_time: "",
-  end_time: "",
+  eventType: "webinar",
+  deliveryMode: "online",
+  eventDate: "",
+  startTime: "",
+  endTime: "",
   quota: 0,
-  price: 0,
-  thumbnail_url: "",
-  is_published: true,
+  price: "0",
+  thumbnailUrl: "",
+  isPublished: true,
 };
 
 function formatDate(date: string) {
@@ -78,13 +78,13 @@ function formatDate(date: string) {
 }
 
 
-function formatPrice(price: number | null) {
-  if (!price) return "Gratis";
+function formatPrice(price: string | null) {
+  if (!price || price === "0") return "Gratis";
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(parseFloat(price));
 }
 
 // Determine event status (Past / Upcoming) berdasarkan tanggal
@@ -157,8 +157,8 @@ export default function ManageEventsPage() {
     return events.filter(
       (event) =>
         event.title.toLowerCase().includes(keyword) ||
-        TYPE_LABEL[event.type].toLowerCase().includes(keyword) ||
-        DELIVERY_LABEL[event.delivery].toLowerCase().includes(keyword),
+        TYPE_LABEL[event.eventType].toLowerCase().includes(keyword) ||
+        DELIVERY_LABEL[event.deliveryMode].toLowerCase().includes(keyword),
     );
   }, [events, search]);
 
@@ -229,22 +229,22 @@ export default function ManageEventsPage() {
     setForm({
       title: row.title,
       description: row.description ?? "",
-      type: row.type,
-      delivery: row.delivery,
-      event_date: row.event_date,
-      start_time: row.start_time?.slice(0, 5) ?? "",
-      end_time: row.end_time?.slice(0, 5) ?? "",
+      eventType: row.eventType,
+      deliveryMode: row.deliveryMode,
+      eventDate: row.eventDate,
+      startTime: row.startTime?.slice(0, 5) ?? "",
+      endTime: row.endTime?.slice(0, 5) ?? "",
       quota: row.quota ?? 0,
-      price: row.price ?? 0,
-      thumbnail_url: row.thumbnail_url ?? "",
-      is_published: row.is_published,
+      price: row.price ?? "0",
+      thumbnailUrl: row.thumbnailUrl ?? "",
+      isPublished: row.isPublished ?? true,
     });
     setModalOpen(true);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!form.title.trim() || !form.event_date) return;
+    if (!form.title.trim() || !form.eventDate) return;
 
     setIsSaving(true);
     setError("");
@@ -373,20 +373,20 @@ export default function ManageEventsPage() {
                       </p>
                       <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
                         <Clock size={12} />
-                        {row.start_time?.slice(0, 5) || "--:--"} -{" "}
-                        {row.end_time?.slice(0, 5) || "--:--"} |{" "}
-                        {DELIVERY_LABEL[row.delivery]}
+                        {row.startTime?.slice(0, 5) || "--:--"} -{" "}
+                        {row.endTime?.slice(0, 5) || "--:--"} |{" "}
+                        {DELIVERY_LABEL[row.deliveryMode]}
                       </p>
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TYPE_COLOR[row.type]}`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TYPE_COLOR[row.eventType]}`}
                       >
-                        {TYPE_LABEL[row.type]}
+                        {TYPE_LABEL[row.eventType]}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
-                      {formatDate(row.event_date)}
+                      {formatDate(row.eventDate)}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {row.quota ?? 0}
@@ -396,14 +396,14 @@ export default function ManageEventsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${row.is_published ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${row.isPublished ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
                       >
-                        {row.is_published ? "Published" : "Draft"}
+                        {row.isPublished ? "Published" : "Draft"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
                       {(() => {
-                        const eventStatus = getEventStatus(row.event_date);
+                        const eventStatus = getEventStatus(row.eventDate);
                         return (
                           <span
                             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold w-fit border ${eventStatus.bgColor} ${eventStatus.textColor} ${eventStatus.borderColor}`}
@@ -509,11 +509,11 @@ export default function ManageEventsPage() {
                   Tipe
                 </label>
                 <select
-                  value={form.type}
+                  value={form.eventType}
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
-                      type: e.target.value as EventType,
+                      eventType: e.target.value as EventType,
                     }))
                   }
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
@@ -531,11 +531,11 @@ export default function ManageEventsPage() {
                   Delivery
                 </label>
                 <select
-                  value={form.delivery}
+                  value={form.deliveryMode}
                   onChange={(e) =>
                     setForm((f) => ({
                       ...f,
-                      delivery: e.target.value as DeliveryMode,
+                      deliveryMode: e.target.value as DeliveryMode,
                     }))
                   }
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
@@ -554,9 +554,9 @@ export default function ManageEventsPage() {
                 </label>
                 <input
                   type="date"
-                  value={form.event_date}
+                  value={form.eventDate}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, event_date: e.target.value }))
+                    setForm((f) => ({ ...f, eventDate: e.target.value }))
                   }
                   required
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
@@ -570,9 +570,9 @@ export default function ManageEventsPage() {
                   </label>
                   <input
                     type="time"
-                    value={form.start_time ?? ""}
+                    value={form.startTime ?? ""}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, start_time: e.target.value }))
+                      setForm((f) => ({ ...f, startTime: e.target.value }))
                     }
                     className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                   />
@@ -583,9 +583,9 @@ export default function ManageEventsPage() {
                   </label>
                   <input
                     type="time"
-                    value={form.end_time ?? ""}
+                    value={form.endTime ?? ""}
                     onChange={(e) =>
-                      setForm((f) => ({ ...f, end_time: e.target.value }))
+                      setForm((f) => ({ ...f, endTime: e.target.value }))
                     }
                     className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                   />
@@ -616,7 +616,7 @@ export default function ManageEventsPage() {
                   min={0}
                   value={form.price ?? 0}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, price: Number(e.target.value) }))
+                    setForm((f) => ({ ...f, price: e.target.value }))
                   }
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 />
@@ -628,9 +628,9 @@ export default function ManageEventsPage() {
                 </label>
                 <input
                   type="url"
-                  value={form.thumbnail_url ?? ""}
+                  value={form.thumbnailUrl ?? ""}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, thumbnail_url: e.target.value }))
+                    setForm((f) => ({ ...f, thumbnailUrl: e.target.value }))
                   }
                   placeholder="https://..."
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
@@ -640,9 +640,9 @@ export default function ManageEventsPage() {
               <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 md:col-span-2">
                 <input
                   type="checkbox"
-                  checked={form.is_published}
+                  checked={form.isPublished}
                   onChange={(e) =>
-                    setForm((f) => ({ ...f, is_published: e.target.checked }))
+                    setForm((f) => ({ ...f, isPublished: e.target.checked }))
                   }
                   className="h-4 w-4 accent-[#CB2229]"
                 />

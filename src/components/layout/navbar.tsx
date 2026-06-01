@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/authContext";
 const icons: Record<string, React.ReactNode> = {
   "About Us": (
     <svg
-      className="h-[15px] w-[15px] flex-shrink-0"
+      className="h-3.75 w-3.75 shrink-0"
       viewBox="0 0 24 24"
       fill="currentColor"
     >
@@ -21,7 +21,7 @@ const icons: Record<string, React.ReactNode> = {
   ),
   Events: (
     <svg
-      className="h-[15px] w-[15px] flex-shrink-0"
+      className="h-3.75 w-3.75 shrink-0"
       viewBox="0 0 24 24"
       fill="currentColor"
     >
@@ -34,7 +34,7 @@ const icons: Record<string, React.ReactNode> = {
   ),
   Programs: (
     <svg
-      className="h-[15px] w-[15px] flex-shrink-0"
+      className="h-3.75 w-3.75 shrink-0"
       viewBox="0 0 24 24"
       fill="currentColor"
     >
@@ -47,7 +47,7 @@ const icons: Record<string, React.ReactNode> = {
   ),
   Trainers: (
     <svg
-      className="h-[15px] w-[15px] flex-shrink-0"
+      className="h-3.75 w-3.75 shrink-0"
       viewBox="0 0 24 24"
       fill="currentColor"
     >
@@ -56,7 +56,7 @@ const icons: Record<string, React.ReactNode> = {
   ),
   Materi: (
     <svg
-      className="h-[15px] w-[15px] flex-shrink-0"
+      className="h-3.75 w-3.75 shrink-0"
       viewBox="0 0 24 24"
       fill="currentColor"
     >
@@ -65,7 +65,7 @@ const icons: Record<string, React.ReactNode> = {
   ),
   "Contact Us": (
     <svg
-      className="h-[15px] w-[15px] flex-shrink-0"
+      className="h-3.75 w-3.75 shrink-0"
       viewBox="0 0 24 24"
       fill="currentColor"
     >
@@ -220,7 +220,7 @@ function DesktopDropdown({
         </svg>
         {/* Active underline */}
         <span
-          className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
+          className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#d6362f] transition-all duration-300 ${
             isActive ? "w-full opacity-100" : "w-0 opacity-0"
           }`}
         />
@@ -236,7 +236,7 @@ function DesktopDropdown({
       >
         <div
           className={`rounded-xl border border-white/20 bg-white/80 p-2 shadow-xl shadow-black/10 backdrop-blur-md ${
-            isGrid ? "grid grid-cols-2 gap-1 min-w-[280px]" : "min-w-[180px]"
+            isGrid ? "grid grid-cols-2 gap-1 min-w-70" : "min-w-45"
           }`}
         >
           {items.map((item) => {
@@ -245,7 +245,7 @@ function DesktopDropdown({
               "group/item flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#374151] transition-all duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f]";
             const content = (
               <>
-                <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#d6362f]/40 transition-colors group-hover/item:bg-[#d6362f]" />
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#d6362f]/40 transition-colors group-hover/item:bg-[#d6362f]" />
                 {item.label}
               </>
             );
@@ -302,7 +302,7 @@ function DesktopNavLink({
       {icons[label]}
       {label}
       <span
-        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
+        className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#d6362f] transition-all duration-300 ${
           isActive ? "w-full opacity-100" : "w-0 opacity-0"
         }`}
       />
@@ -317,7 +317,7 @@ function DesktopNavLink({
       {icons[label]}
       {label}
       <span
-        className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#d6362f] transition-all duration-300 ${
+        className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#d6362f] transition-all duration-300 ${
           isActive ? "w-full opacity-100" : "w-0 opacity-0"
         }`}
       />
@@ -413,40 +413,30 @@ export default function Navbar() {
         {/* ── Desktop LOG IN + Hamburger ── */}
         <div className="flex items-center gap-3">
           {/* LOG IN only on desktop */}
-          {!loading &&
-            (isAuthenticated ? (
-              <Link
-                href="/dashboard"
-                className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
-              >
-                DASHBOARD
-              </Link>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
-              >
-                LOG IN
-              </Link>
-            ))}
+          <Link
+            href="/auth/login"
+            className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
+          >
+            LOG IN
+          </Link>
 
           {/* Hamburger (mobile) */}
           <button
             id="navbar-hamburger"
-            className="flex h-9 w-9 flex-col items-center justify-center gap-[5px] rounded-md p-1 transition hover:bg-black/5 lg:hidden"
+            className="flex h-9 w-9 flex-col items-center justify-center gap-1.25 rounded-md p-1 transition hover:bg-black/5 lg:hidden"
             aria-label={menuOpen ? "Close menu" : "Open menu"}
             aria-expanded={menuOpen}
             aria-controls="mobile-drawer"
             onClick={() => setMenuOpen((v) => !v)}
           >
             <span
-              className={`block h-[2px] w-5 rounded-full bg-[#1f2937] transition-all duration-300 ${menuOpen ? "translate-y-[7px] rotate-45" : ""}`}
+              className={`block h-0.5 w-5 rounded-full bg-[#1f2937] transition-all duration-300 ${menuOpen ? "translate-y-1.75 rotate-45" : ""}`}
             />
             <span
-              className={`block h-[2px] w-5 rounded-full bg-[#1f2937] transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""}`}
+              className={`block h-0.5 w-5 rounded-full bg-[#1f2937] transition-all duration-300 ${menuOpen ? "opacity-0 scale-x-0" : ""}`}
             />
             <span
-              className={`block h-[2px] w-5 rounded-full bg-[#1f2937] transition-all duration-300 ${menuOpen ? "-translate-y-[7px] -rotate-45" : ""}`}
+              className={`block h-0.5 w-5 rounded-full bg-[#1f2937] transition-all duration-300 ${menuOpen ? "-translate-y-1.75 -rotate-45" : ""}`}
             />
           </button>
         </div>
@@ -564,26 +554,14 @@ export default function Navbar() {
               </Link>
             ),
           )}
-
           {/* LOG IN inside mobile drawer */}
-          {!loading &&
-            (isAuthenticated ? (
-              <Link
-                href="/dashboard"
-                className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] active:scale-95"
-                onClick={() => setMenuOpen(false)}
-              >
-                DASHBOARD
-              </Link>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-250 hover:bg-[#b92924] active:scale-95"
-                onClick={() => setMenuOpen(false)}
-              >
-                LOG IN
-              </Link>
-            ))}
+          <Link
+            href="/auth/login"
+            className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-250 hover:bg-[#b92924] active:scale-95"
+            onClick={() => setMenuOpen(false)}
+          >
+            LOG IN
+          </Link>
         </nav>
       </div>
     </header>

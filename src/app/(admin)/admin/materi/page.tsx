@@ -13,22 +13,14 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-// TODO: Import MaterialRow type from new database schema when ready
-type MaterialRow = {
-  id: number;
-  title: string;
-  description?: string | null;
-  link_url?: string | null;
-  cover_url?: string | null;
-  is_active: boolean;
-};
+import type { MaterialRow } from "@/types/database";
 
 type MaterialFormData = {
   title: string;
   description: string;
-  link_url: string;
-  cover_url: string;
-  is_active: boolean;
+  linkUrl: string;
+  coverUrl: string;
+  isActive: boolean;
 };
 
 const COVER_GRADIENTS = [
@@ -43,9 +35,9 @@ const COVER_GRADIENTS = [
 const EMPTY_FORM: MaterialFormData = {
   title: "",
   description: "",
-  link_url: "",
-  cover_url: "",
-  is_active: true,
+  linkUrl: "",
+  coverUrl: "",
+  isActive: true,
 };
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -84,22 +76,23 @@ export default function ManageMaterialPage() {
     );
   }, [materials, search]);
 
-  // Fetch materials dari Supabase
+  // Fetch materials dari API route (Drizzle)
   const fetchMaterials = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from("materials")
-        .select("id,title,description,link_url,cover_url,is_active")
-        .order("id", { ascending: false });
+      const response = await fetch("/api/admin/materi", { cache: "no-store" });
+      const result = (await response.json()) as {
+        data?: MaterialRow[];
+        error?: string;
+      };
 
-      if (fetchError) {
-        throw new Error(fetchError.message);
+      if (!response.ok) {
+        throw new Error(result.error || "Gagal memuat data materi.");
       }
 
-      setMaterials((data as MaterialRow[]) ?? []);
+      setMaterials(result.data ?? []);
     } catch (err) {
       setMaterials([]);
       setError(getErrorMessage(err, "Gagal memuat data materi."));
@@ -132,9 +125,9 @@ export default function ManageMaterialPage() {
     setForm({
       title: material.title,
       description: material.description ?? "",
-      link_url: material.link_url ?? "",
-      cover_url: material.cover_url ?? "",
-      is_active: material.is_active,
+      linkUrl: material.linkUrl ?? "",
+      coverUrl: material.coverUrl ?? "",
+      isActive: material.isActive ?? true,
     });
     setModalOpen(true);
   };
@@ -147,12 +140,12 @@ export default function ManageMaterialPage() {
       return;
     }
 
-    if (form.link_url && !isValidImageUrl(form.link_url)) {
+    if (form.linkUrl && !isValidImageUrl(form.linkUrl)) {
       setError("Link Aksi harus berupa URL yang valid.");
       return;
     }
 
-    if (form.cover_url && !isValidImageUrl(form.cover_url)) {
+    if (form.coverUrl && !isValidImageUrl(form.coverUrl)) {
       setError("URL Cover harus berupa URL yang valid.");
       return;
     }
@@ -162,37 +155,34 @@ export default function ManageMaterialPage() {
     setSuccess("");
 
     try {
-      // Payload: title, description, link_url, cover_url, is_active
+      // Payload: title, description, linkUrl, coverUrl, isActive
       const payload = {
         title: form.title.trim(),
-        description: (form.description?.trim() || null) as string | null,
-        link_url: (form.link_url?.trim() || null) as string | null,
-        cover_url: (form.cover_url?.trim() || null) as string | null,
-        is_active: form.is_active,
+        description: form.description?.trim() || null,
+        linkUrl: form.linkUrl?.trim() || null,
+        coverUrl: form.coverUrl?.trim() || null,
+        isActive: form.isActive,
       };
 
       if (editTarget) {
         // UPDATE
-        const { error: updateError } = await supabase
-          .from("materials")
-          .update(payload)
-          .eq("id", editTarget.id);
-
-        if (updateError) {
-          throw new Error(updateError.message);
-        }
-
+        const response = await fetch("/api/admin/materi", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editTarget.id, ...payload }),
+        });
+        const result = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Gagal mengubah materi.");
         showSuccess("Materi berhasil diperbarui.");
       } else {
         // INSERT
-        const { error: insertError } = await supabase
-          .from("materials")
-          .insert(payload);
-
-        if (insertError) {
-          throw new Error(insertError.message);
-        }
-
+        const response = await fetch("/api/admin/materi", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Gagal menambah materi.");
         showSuccess("Materi berhasil ditambahkan.");
       }
 
@@ -215,14 +205,11 @@ export default function ManageMaterialPage() {
     setSuccess("");
 
     try {
-      const { error: deleteError } = await supabase
-        .from("materials")
-        .delete()
-        .eq("id", deleteTarget.id);
-
-      if (deleteError) {
-        throw new Error(deleteError.message);
-      }
+      const response = await fetch(`/api/admin/materi?id=${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Gagal menghapus materi.");
 
       setDeleteTarget(null);
       showSuccess("Materi berhasil dihapus.");
@@ -300,7 +287,7 @@ export default function ManageMaterialPage() {
                 : 'Belum ada data materi. Klik "+ Tambah Materi" untuk menambahkan.'}
             </div>
           ) : (
-            filteredMaterials.map((mat, idx) => (
+            filteredMaterials.map((mat) => (
               <div
                 key={`material-${mat.id}`}
                 className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow"
@@ -309,9 +296,9 @@ export default function ManageMaterialPage() {
                 <div
                   className={`h-36 bg-linear-to-br ${COVER_GRADIENTS[mat.id % COVER_GRADIENTS.length]} flex items-center justify-center relative overflow-hidden`}
                 >
-                  {mat.cover_url && isValidImageUrl(mat.cover_url) ? (
+                  {mat.coverUrl && isValidImageUrl(mat.coverUrl) ? (
                     <img
-                      src={mat.cover_url}
+                      src={mat.coverUrl}
                       alt={mat.title}
                       className="w-full h-full object-cover"
                     />
@@ -341,16 +328,16 @@ export default function ManageMaterialPage() {
                   <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100">
                     {/* Left Column - Link URL */}
                     <div className="flex-1">
-                      {mat.link_url ? (
+                      {mat.linkUrl ? (
                         <a
-                          href={mat.link_url}
+                          href={mat.linkUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-xs text-[#CB2229] hover:underline font-medium truncate max-w-[150px]"
-                          title={mat.link_url}
+                          title={mat.linkUrl}
                         >
                           <ExternalLink size={12} className="shrink-0" />
-                          <span className="truncate">{mat.link_url}</span>
+                          <span className="truncate">{mat.linkUrl}</span>
                         </a>
                       ) : (
                         <span className="text-xs text-slate-300">—</span>
@@ -361,17 +348,17 @@ export default function ManageMaterialPage() {
                     <div className="flex justify-end">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${
-                          mat.is_active
+                          mat.isActive
                             ? "bg-emerald-50 text-emerald-600"
                             : "bg-slate-100 text-slate-500"
                         }`}
                       >
-                        {mat.is_active ? (
+                        {mat.isActive ? (
                           <Eye size={11} />
                         ) : (
                           <EyeOff size={11} />
                         )}
-                        {mat.is_active ? "Aktif" : "Nonaktif"}
+                        {mat.isActive ? "Aktif" : "Nonaktif"}
                       </span>
                     </div>
                   </div>
@@ -458,15 +445,15 @@ export default function ManageMaterialPage() {
                         <p className="truncate">{mat.title}</p>
                       </td>
                       <td className="px-6 py-4">
-                        {mat.link_url ? (
+                        {mat.linkUrl ? (
                           <a
-                            href={mat.link_url}
+                            href={mat.linkUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-xs text-[#CB2229] hover:underline font-medium max-w-50 truncate"
                           >
                             <ExternalLink size={11} className="shrink-0" />
-                            <span className="truncate">{mat.link_url}</span>
+                            <span className="truncate">{mat.linkUrl}</span>
                           </a>
                         ) : (
                           <span className="text-xs text-slate-400">—</span>
@@ -475,17 +462,17 @@ export default function ManageMaterialPage() {
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${
-                            mat.is_active
+                            mat.isActive
                               ? "bg-emerald-50 text-emerald-600"
                               : "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          {mat.is_active ? (
+                          {mat.isActive ? (
                             <Eye size={10} />
                           ) : (
                             <EyeOff size={10} />
                           )}
-                          {mat.is_active ? "Aktif" : "Nonaktif"}
+                          {mat.isActive ? "Aktif" : "Nonaktif"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -548,10 +535,10 @@ export default function ManageMaterialPage() {
             </div>
 
             {/* Preview Cover */}
-            {form.cover_url && isValidImageUrl(form.cover_url) ? (
+            {form.coverUrl && isValidImageUrl(form.coverUrl) ? (
               <div className="flex justify-center rounded-xl bg-slate-50 p-3">
                 <img
-                  src={form.cover_url}
+                  src={form.coverUrl}
                   alt="Preview"
                   className="max-h-40 max-w-full rounded-lg object-cover"
                 />
@@ -607,9 +594,9 @@ export default function ManageMaterialPage() {
                 </label>
                 <input
                   type="url"
-                  value={form.link_url}
+                  value={form.linkUrl}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, link_url: e.target.value }))
+                    setForm((prev) => ({ ...prev, linkUrl: e.target.value }))
                   }
                   placeholder="https://..."
                   className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
@@ -623,9 +610,9 @@ export default function ManageMaterialPage() {
                 </label>
                 <input
                   type="url"
-                  value={form.cover_url}
+                  value={form.coverUrl}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, cover_url: e.target.value }))
+                    setForm((prev) => ({ ...prev, coverUrl: e.target.value }))
                   }
                   placeholder="https://... (kosongkan untuk gradient)"
                   className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
@@ -639,15 +626,15 @@ export default function ManageMaterialPage() {
                 </label>
                 <label className="flex min-h-10 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5">
                   <span className="text-sm font-semibold text-slate-700">
-                    {form.is_active ? "Aktif" : "Nonaktif"}
+                    {form.isActive ? "Aktif" : "Nonaktif"}
                   </span>
                   <input
                     type="checkbox"
-                    checked={form.is_active}
+                    checked={form.isActive}
                     onChange={(e) =>
                       setForm((prev) => ({
                         ...prev,
-                        is_active: e.target.checked,
+                        isActive: e.target.checked,
                       }))
                     }
                     className="h-4 w-4 accent-[#CB2229]"

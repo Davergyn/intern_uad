@@ -12,27 +12,15 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-// TODO: Import types from new database schema when ready
-type ProgramKategori =
-  | "training-of-trainer"
-  | "seminar"
-  | "workshop"
-  | "partnership";
-type ProgramRow = {
-  id: number;
-  kategori: ProgramKategori;
-  title: string;
-  image_url?: string | null;
-  is_active: boolean;
-};
+import type { ProgramKategori, ProgramRow } from "@/types/database";
 
 type CategoryFilter = "all" | ProgramKategori;
 
 type ProgramPhotoForm = {
   kategori: ProgramKategori;
   title: string;
-  image_url: string;
-  is_active: boolean;
+  imageUrl: string;
+  isActive: boolean;
 };
 
 const KATEGORI_OPTIONS: Array<{
@@ -57,8 +45,8 @@ const KATEGORI_OPTIONS: Array<{
 const EMPTY_FORM: ProgramPhotoForm = {
   kategori: "training-of-trainer",
   title: "",
-  image_url: "",
-  is_active: true,
+  imageUrl: "",
+  isActive: true,
 };
 
 function getKategoriMeta(kategori: ProgramKategori) {
@@ -103,7 +91,7 @@ export default function ManageProgramsPage() {
       const matchesSearch =
         !keyword ||
         item.title.toLowerCase().includes(keyword) ||
-        (item.image_url ?? "").toLowerCase().includes(keyword);
+        (item.imageUrl ?? "").toLowerCase().includes(keyword);
       const matchesCategory =
         categoryFilter === "all" || item.kategori === categoryFilter;
 
@@ -111,21 +99,23 @@ export default function ManageProgramsPage() {
     });
   }, [categoryFilter, items, search]);
 
+  // Fetch programs dari API route (Drizzle)
   const fetchItems = async () => {
     setIsLoading(true);
     setError("");
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from("programs")
-        .select("id,title,kategori,image_url,is_active")
-        .order("id", { ascending: false });
+      const response = await fetch("/api/admin/programs", { cache: "no-store" });
+      const result = (await response.json()) as {
+        data?: ProgramRow[];
+        error?: string;
+      };
 
-      if (fetchError) {
-        throw new Error(fetchError.message);
+      if (!response.ok) {
+        throw new Error(result.error || "Gagal memuat data program.");
       }
 
-      setItems((data ?? []) as ProgramRow[]);
+      setItems(result.data ?? []);
     } catch (fetchError) {
       setItems([]);
       setError(getErrorMessage(fetchError, "Gagal memuat data program."));
@@ -159,8 +149,8 @@ export default function ManageProgramsPage() {
     setForm({
       kategori: row.kategori,
       title: row.title,
-      image_url: row.image_url ?? "",
-      is_active: row.is_active,
+      imageUrl: row.imageUrl ?? "",
+      isActive: row.isActive ?? true,
     });
     setModalOpen(true);
   };
@@ -173,7 +163,7 @@ export default function ManageProgramsPage() {
       return;
     }
 
-    if (!form.image_url.trim() || !isValidImageUrl(form.image_url)) {
+    if (!form.imageUrl.trim() || !isValidImageUrl(form.imageUrl)) {
       setError("URL Gambar wajib diisi dan valid.");
       return;
     }
@@ -186,38 +176,29 @@ export default function ManageProgramsPage() {
       const payload = {
         title: form.title.trim(),
         kategori: form.kategori,
-        image_url: form.image_url.trim(),
-        is_active: form.is_active,
+        imageUrl: form.imageUrl.trim(),
+        isActive: form.isActive,
       };
 
       if (editTarget) {
         // UPDATE
-        const { error: updateError } = await supabase
-          .from("programs")
-          .update(payload)
-          .eq("id", editTarget.id);
-
-        if (updateError) {
-          throw new Error(updateError.message);
-        }
-
+        const response = await fetch("/api/admin/programs", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editTarget.id, ...payload }),
+        });
+        const result = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Gagal mengubah program.");
         showSuccess("Foto program berhasil diperbarui.");
       } else {
-        // INSERT - Auto-generate slug dengan kombinasi kategori + timestamp
-        const generatedSlug = `${form.kategori}-${Date.now()}`;
-        const insertPayload = {
-          ...payload,
-          slug: generatedSlug,
-        };
-
-        const { error: insertError } = await supabase
-          .from("programs")
-          .insert(insertPayload);
-
-        if (insertError) {
-          throw new Error(insertError.message);
-        }
-
+        // INSERT
+        const response = await fetch("/api/admin/programs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const result = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(result.error || "Gagal menambah program.");
         showSuccess("Foto program berhasil ditambahkan.");
       }
 
@@ -240,14 +221,11 @@ export default function ManageProgramsPage() {
     setSuccess("");
 
     try {
-      const { error: deleteError } = await supabase
-        .from("programs")
-        .delete()
-        .eq("id", deleteTarget.id);
-
-      if (deleteError) {
-        throw new Error(deleteError.message);
-      }
+      const response = await fetch(`/api/admin/programs?id=${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(result.error || "Gagal menghapus program.");
 
       setDeleteTarget(null);
       showSuccess("Foto program berhasil dihapus.");
@@ -366,9 +344,9 @@ export default function ManageProgramsPage() {
                     >
                       <td className="max-w-sm px-6 py-4">
                         <div className="flex h-10 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                          {item.image_url && isValidImageUrl(item.image_url) ? (
+                          {item.imageUrl && isValidImageUrl(item.imageUrl) ? (
                             <img
-                              src={item.image_url}
+                              src={item.imageUrl}
                               alt={item.title}
                               className="h-full w-full object-cover"
                             />
@@ -391,19 +369,19 @@ export default function ManageProgramsPage() {
                       </td>
                       <td className="max-w-md px-6 py-4">
                         <p className="truncate text-xs text-slate-500">
-                          {item.image_url || "-"}
+                          {item.imageUrl || "-"}
                         </p>
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${item.is_active ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${item.isActive ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
                         >
-                          {item.is_active ? (
+                          {item.isActive ? (
                             <Eye size={12} />
                           ) : (
                             <EyeOff size={12} />
                           )}
-                          {item.is_active ? "Aktif" : "Nonaktif"}
+                          {item.isActive ? "Aktif" : "Nonaktif"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -493,15 +471,15 @@ export default function ManageProgramsPage() {
                 </label>
                 <label className="flex min-h-10 items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5">
                   <span className="text-sm font-semibold text-slate-700">
-                    {form.is_active ? "Aktif" : "Nonaktif"}
+                    {form.isActive ? "Aktif" : "Nonaktif"}
                   </span>
                   <input
                     type="checkbox"
-                    checked={form.is_active}
+                    checked={form.isActive}
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
-                        is_active: event.target.checked,
+                        isActive: event.target.checked,
                       }))
                     }
                     className="h-4 w-4 accent-[#CB2229]"
@@ -533,21 +511,21 @@ export default function ManageProgramsPage() {
                 </label>
                 <input
                   type="url"
-                  value={form.image_url}
+                  value={form.imageUrl}
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
-                      image_url: event.target.value,
+                      imageUrl: event.target.value,
                     }))
                   }
                   required
                   placeholder="https://..."
                   className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
                 />
-                {form.image_url && isValidImageUrl(form.image_url) && (
+                {form.imageUrl && isValidImageUrl(form.imageUrl) && (
                   <div className="mt-2 flex justify-center rounded-xl bg-slate-50 p-3">
                     <img
-                      src={form.image_url}
+                      src={form.imageUrl}
                       alt="Preview"
                       className="max-h-40 max-w-full rounded-lg object-cover"
                     />

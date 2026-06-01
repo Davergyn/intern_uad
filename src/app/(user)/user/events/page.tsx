@@ -3,17 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
-// TODO: Import types from new database schema when ready
-type EventType = "webinar" | "workshop" | "seminar" | "training";
-type DeliveryMode = "online" | "face_to_face" | "hybrid";
-type EventRow = {
-  id: number;
-  title: string;
-  event_type: EventType;
-  delivery_mode: DeliveryMode;
-  event_date?: string | null;
-  is_published: boolean;
-};
+import type { EventRow, EventType, DeliveryMode } from "@/types/database";
 import {
   Bookmark,
   Search,
@@ -81,13 +71,22 @@ export default function SavedEventsPage() {
     }
   }, [userEmail]);
 
-  // TODO: Implement with server route when ready
+  // Fetch all events from API
   useEffect(() => {
-    const initializeEvents = () => {
-      setLoading(false);
-      setAllEvents([]); // Placeholder - awaiting server route
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch("/api/admin/events", { cache: "no-store" });
+        const result = (await response.json()) as { data?: EventRow[]; error?: string };
+        if (response.ok && result.data) {
+          setAllEvents(result.data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch events:", e);
+      } finally {
+        setLoading(false);
+      }
     };
-    initializeEvents();
+    void fetchEvents();
   }, []);
 
   const handleUnsave = (id: number) => {
@@ -107,7 +106,7 @@ export default function SavedEventsPage() {
       (event.description &&
         event.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesType = selectedType === "all" || event.type === selectedType;
+    const matchesType = selectedType === "all" || event.eventType === selectedType;
 
     return matchesSearch && matchesType;
   });
@@ -237,15 +236,15 @@ export default function SavedEventsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between gap-3">
                   <span
-                    className={`rounded-xl px-2.5 py-1 text-xs font-bold ${TYPE_BADGE[event.type]}`}
+                    className={`rounded-xl px-2.5 py-1 text-xs font-bold ${TYPE_BADGE[event.eventType]}`}
                   >
-                    {TYPE_LABEL[event.type]}
+                    {TYPE_LABEL[event.eventType]}
                   </span>
                   <span
-                    className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold ${DELIVERY_BADGE[event.delivery]}`}
+                    className={`inline-flex items-center gap-1 rounded-xl px-2.5 py-1 text-xs font-bold ${DELIVERY_BADGE[event.deliveryMode]}`}
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                    {DELIVERY_LABEL[event.delivery]}
+                    {DELIVERY_LABEL[event.deliveryMode]}
                   </span>
                 </div>
 
@@ -265,14 +264,14 @@ export default function SavedEventsPage() {
                 <div className="space-y-2 rounded-2xl bg-slate-50 p-3 text-xs text-slate-600 font-medium">
                   <div className="flex items-center gap-2">
                     <Calendar size={14} className="text-[#CB2229]" />
-                    <span>{formatDate(event.event_date)}</span>
+                    <span>{formatDate(event.eventDate)}</span>
                   </div>
-                  {event.start_time && (
+                  {event.startTime && (
                     <div className="flex items-center gap-2">
                       <Clock size={14} className="text-[#CB2229]" />
                       <span>
-                        {event.start_time.substring(0, 5)} -{" "}
-                        {event.end_time?.substring(0, 5) ?? "Selesai"} WIB
+                        {event.startTime.substring(0, 5)} -{" "}
+                        {event.endTime?.substring(0, 5) ?? "Selesai"} WIB
                       </span>
                     </div>
                   )}

@@ -27,13 +27,26 @@ export type EventRow = {
   quota: number | null;
   price: string | null; // decimal from database
   thumbnailUrl: string | null;
-  isPublished: boolean;
-  createdBy?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
+  isPublished: boolean | null;
+  createdBy: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
-export type EventFormValues = Omit<EventRow, "id" | "createdAt" | "updatedAt" | "createdBy">;
+export type EventFormValues = {
+  title: string;
+  description: string | null;
+  eventType: EventType;
+  deliveryMode: DeliveryMode;
+  eventDate: string;
+  startTime: string | null;
+  endTime: string | null;
+  quota: number | null;
+  price: string | null;
+  thumbnailUrl: string | null;
+  isPublished: boolean;
+};
+
 
 export type MaterialRow = {
   id: number;
@@ -41,10 +54,10 @@ export type MaterialRow = {
   description: string | null;
   linkUrl: string | null;
   coverUrl: string | null;
-  isActive: boolean;
-  createdBy?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
+  isActive: boolean | null;
+  createdBy: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type TrainerRow = {
@@ -53,22 +66,22 @@ export type TrainerRow = {
   roleTitle: string | null;
   photoUrl: string | null;
   bio: string | null;
-  isActive: boolean;
-  createdBy?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
+  isActive: boolean | null;
+  createdBy: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type ProgramRow = {
   id: number;
   kategori: ProgramKategori;
   title: string;
-  imageUrl: string | null;
+  imageUrl: string;
   description: string | null;
-  isActive: boolean;
-  createdBy?: number | null;
-  createdAt?: string;
-  updatedAt?: string;
+  isActive: boolean | null;
+  createdBy: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type UserRow = {
@@ -76,10 +89,10 @@ export type UserRow = {
   fullName: string | null;
   email: string;
   passwordHash: string;
-  isActive: boolean;
+  isActive: boolean | null;
   avatarUrl: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type AdminRow = {
@@ -87,11 +100,11 @@ export type AdminRow = {
   fullName: string;
   email: string;
   passwordHash: string;
-  adminLevel: AdminLevel;
-  isActive: boolean;
-  lastLogin?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  adminLevel: string | null;
+  isActive: boolean | null;
+  lastLogin: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 // ============================================================================
@@ -102,29 +115,29 @@ export type EventRegistrationRow = {
   id: number;
   userId: number;
   eventId: number;
-  status: RegistrationStatus;
-  registeredAt?: string;
-  attendedAt?: string | null;
-  cancelledAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
+  status: RegistrationStatus | null;
+  registeredAt: Date | null;
+  attendedAt: Date | null;
+  cancelledAt: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 export type UserSavedMaterialRow = {
   id: number;
   userId: number;
   materialId: number;
-  savedAt?: string;
-  createdAt?: string;
+  savedAt: Date | null;
+  createdAt: Date | null;
 };
 
 export type EventTrainerRow = {
   id: number;
   eventId: number;
   trainerId: number;
-  roleInEvent: string; // e.g. "Pembicara", "Moderator"
-  createdAt?: string;
-  updatedAt?: string;
+  roleInEvent: string | null; // e.g. "Pembicara", "Moderator"
+  createdAt: Date | null;
+  updatedAt: Date | null;
 };
 
 // ============================================================================
