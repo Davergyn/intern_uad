@@ -1,12 +1,6 @@
-"use client";
-
 import React from "react";
 import { db } from "@/db";
-import {
-  events,
-  trainers,
-  eventRegistrations,
-} from "@/db/schema";
+import { trainers, eventRegistrations } from "@/db/schema";
 import { count, countDistinct, eq } from "drizzle-orm";
 
 export default async function HeroSection() {
@@ -23,7 +17,6 @@ export default async function HeroSection() {
     .from(eventRegistrations);
   const totalActiveUsers = totalUsersResult[0]?.count || 0;
 
-export default function HeroSection() {
   return (
     <section className="relative hidden min-h-screen w-full overflow-hidden bg-[#d32626] text-white lg:flex lg:w-1/2">
       <div className="pointer-events-none absolute inset-0">
@@ -55,13 +48,17 @@ export default function HeroSection() {
           <div className="h-px w-full bg-white/28" />
           <div className="mt-6 flex flex-wrap gap-x-10 gap-y-5">
             <div className="text-center">
-              <p className="text-4xl font-black leading-none">{totalActiveUsers}+</p>
+              <p className="text-4xl font-black leading-none">
+                {totalActiveUsers}+
+              </p>
               <p className="mt-2 text-xl font-semibold text-white/95">
                 Peserta Aktif
               </p>
             </div>
             <div className=" text-center ">
-              <p className="text-4xl font-black leading-none">{totalTrainers}+</p>
+              <p className="text-4xl font-black leading-none">
+                {totalTrainers}+
+              </p>
               <p className="mt-2 text-xl font-semibold text-white/95">
                 Narasumber
               </p>
@@ -77,4 +74,4 @@ export default function HeroSection() {
       </div>
     </section>
   );
-}}
+}

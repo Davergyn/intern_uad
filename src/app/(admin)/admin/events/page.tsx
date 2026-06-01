@@ -710,21 +710,6 @@ export default function ManageEventsPage() {
         </div>
       )}
 
-      <div className="rounded-2xl border border-slate-100 bg-white p-5 text-sm text-slate-500 shadow-sm">
-        <div className="mb-2 flex items-center gap-2 font-semibold text-slate-700">
-          <CalendarDays size={16} className="text-[#CB2229]" />
-          Catatan Supabase
-        </div>
-        Operasi admin berjalan melalui{" "}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5">
-          /api/admin/events
-        </code>{" "}
-        agar{" "}
-        <code className="rounded bg-slate-100 px-1.5 py-0.5">
-          SUPABASE_SERVICE_ROLE_KEY
-        </code>{" "}
-        tetap berada di server.
-      </div>
     </div>
   );
 }

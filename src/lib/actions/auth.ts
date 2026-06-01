@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, admins } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -195,6 +195,90 @@ export async function loginUser(formData: {
     return {
       success: false,
       message: "Terjadi kesalahan saat login",
+      error: "INTERNAL_ERROR",
+    };
+  }
+}
+
+/**
+ * Login Admin - Melakukan autentikasi admin
+ * @param formData - Object dengan email dan password
+ * @returns { success: boolean, message: string, role?: string, data?: object, error?: string }
+ */
+export async function loginAdmin(formData: {
+  email: string;
+  password: string;
+}): Promise<{
+  success: boolean;
+  message: string;
+  role?: "admin";
+  data?: { id: number; email: string; fullName: string };
+  error?: string;
+}> {
+  try {
+    const { email, password } = formData;
+
+    if (!email || !password) {
+      return {
+        success: false,
+        message: "Kredensial tidak valid",
+        error: "MISSING_CREDENTIALS",
+      };
+    }
+
+    // ========== CARI ADMIN DI DATABASE ==========
+    const foundAdmin = await db
+      .select()
+      .from(admins)
+      .where(eq(admins.email, email.toLowerCase()))
+      .limit(1);
+
+    if (foundAdmin.length === 0) {
+      return {
+        success: false,
+        message: "Kredensial tidak valid",
+        error: "INVALID_CREDENTIALS",
+      };
+    }
+
+    const admin = foundAdmin[0];
+
+    // Cek apakah admin aktif
+    if (!admin.isActive) {
+      return {
+        success: false,
+        message: "Akun admin telah dinonaktifkan",
+        error: "ADMIN_INACTIVE",
+      };
+    }
+
+    // ========== COCOKKAN PASSWORD ==========
+    const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
+
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        message: "Kredensial tidak valid",
+        error: "INVALID_CREDENTIALS",
+      };
+    }
+
+    // ========== LOGIN SUKSES ==========
+    return {
+      success: true,
+      message: "Login admin berhasil!",
+      role: "admin",
+      data: {
+        id: admin.id,
+        email: admin.email,
+        fullName: admin.fullName,
+      },
+    };
+  } catch (error) {
+    console.error("Admin login error:", error);
+    return {
+      success: false,
+      message: "Terjadi kesalahan saat login admin",
       error: "INTERNAL_ERROR",
     };
   }

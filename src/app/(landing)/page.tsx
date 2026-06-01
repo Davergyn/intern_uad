@@ -4,11 +4,12 @@ import { db } from "@/db";
 import {
   events,
   programs,
+  partnerships,
   trainers,
   eventRegistrations,
   users,
 } from "@/db/schema";
-import { gte, lt, eq, and, count, countDistinct } from "drizzle-orm";
+import { gte, lt, eq, and, count, countDistinct, desc } from "drizzle-orm";
 import type { EventRow, ProgramRow } from "@/types/database";
 
 type Alt1PageProps = {
@@ -111,14 +112,12 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
     )
     .limit(10);
 
-  // Query: Mengambil daftar program/mitra untuk ditampilkan di logo marquee
-  const partners: ProgramRow[] = await db
+  // Query: Mengambil daftar partnership untuk ditampilkan di logo marquee
+  const partners = await db
     .select()
-    .from(programs)
-    .where(
-      and(eq(programs.kategori, "partnership"), eq(programs.isActive, true)),
-    )
-    .limit(12);
+    .from(partnerships)
+    .orderBy(desc(partnerships.id))
+    .limit(20);
 
   // Query: Hitung total events yang dipublikasikan
   const totalEventsResult = await db
@@ -629,7 +628,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
           ) : (
             <div
               className="flex w-max shrink-0 items-center gap-12 sm:gap-20"
-              style={{ animation: "marquee 5s linear infinite" }}
+              style={{ animation: "marquee 20s linear infinite" }}
             >
               {[...partners, ...partners].map((p, index) => (
                 <div
@@ -637,8 +636,8 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
                   className="flex h-32 w-32 shrink-0 items-center justify-center p-4 transition-all duration-300 sm:h-48 sm:w-48"
                 >
                   <img
-                    src={p.imageUrl || ""}
-                    alt={p.title || "Partner Logo"}
+                    src={p.logoUrl || ""}
+                    alt={p.name || "Partner Logo"}
                     className="h-full w-full object-contain filter grayscale transition-all duration-300 hover:filter-none"
                   />
                 </div>

@@ -6,7 +6,6 @@ CREATE TABLE public.admins (
   full_name character varying NOT NULL,
   email character varying NOT NULL UNIQUE,
   password_hash character varying NOT NULL,
-  admin_level character varying DEFAULT 'super_admin'::character varying,
   is_active boolean DEFAULT true,
   last_login timestamp without time zone,
   created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,

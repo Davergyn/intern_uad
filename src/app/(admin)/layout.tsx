@@ -12,6 +12,7 @@ import {
   Rocket,
   Users,
   BookOpen,
+  Handshake,
   LogOut,
   Menu,
   X,
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { href: "/admin/programs", label: "Kelola Programs", icon: Rocket },
   { href: "/admin/trainers", label: "Kelola Trainers", icon: Users },
   { href: "/admin/materi", label: "Kelola Materi", icon: BookOpen },
+  { href: "/admin/partnerships", label: "Kelola Partnerships", icon: Handshake },
 ];
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
