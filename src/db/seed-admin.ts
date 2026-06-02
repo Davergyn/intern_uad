@@ -16,7 +16,7 @@ import * as schema from "./schema";
 // ====== KONFIGURASI ADMIN ======
 // Silahkan ubah data ini sesuai kebutuhan
 const ADMIN_EMAIL = "admin@academy.id";
-const ADMIN_PASSWORD = "Admin123!";
+const ADMIN_PASSWORD = "!";
 const ADMIN_FULL_NAME = "Super Admin";
 // ================================
 
@@ -25,7 +25,9 @@ async function seedAdmin() {
 
   if (!connectionString) {
     console.error("❌ DATABASE_URL tidak ditemukan di environment.");
-    console.error("   Pastikan file .env.local berisi DATABASE_URL yang valid.");
+    console.error(
+      "   Pastikan file .env.local berisi DATABASE_URL yang valid.",
+    );
     process.exit(1);
   }
 
@@ -42,7 +44,9 @@ async function seedAdmin() {
       .limit(1);
 
     if (existing.length > 0) {
-      console.log(`⚠️  Admin dengan email "${ADMIN_EMAIL}" sudah ada (id: ${existing[0].id}).`);
+      console.log(
+        `⚠️  Admin dengan email "${ADMIN_EMAIL}" sudah ada (id: ${existing[0].id}).`,
+      );
       console.log("   Tidak ada perubahan yang dilakukan.");
     } else {
       console.log("🔐 Hashing password...");

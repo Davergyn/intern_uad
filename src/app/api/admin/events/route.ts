@@ -39,8 +39,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ data: inserted }, { status: 201 });
   } catch (error) {
     console.error("POST /api/admin/events error:", error);
+    const message =
+      error instanceof Error ? error.message : "Gagal menambah event.";
     return NextResponse.json(
-      { error: "Gagal menambah event." },
+      { error: message },
       { status: 500 },
     );
   }
