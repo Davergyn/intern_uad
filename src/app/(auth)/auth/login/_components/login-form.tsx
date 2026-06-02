@@ -51,7 +51,7 @@ export default function LoginForm() {
       loginAsUser(normalizedEmail, password);
       setSuccessMessage("Login berhasil! Mengalihkan...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/user");
       }, 1500);
     } else {
       setIsLoading(false);

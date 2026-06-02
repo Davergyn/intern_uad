@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
 
 // ─────────────────────────────────────────────
@@ -347,7 +347,13 @@ export default function Navbar() {
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const activeSection = useActiveSection(allSectionIds);
   const pathname = usePathname();
-  const { user, loading, isAuthenticated } = useAuth();
+  const router = useRouter();
+  const { user, loading, isAuthenticated, logout } = useAuth();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Helper: resolve isActive for any nav item
   // — pathname-based for real routes, scroll-based for hash-only links
@@ -357,6 +363,29 @@ export default function Navbar() {
     return "#" + activeSection === href;
   }
 
+  // Extract name from email
+  const getUserName = () => {
+    if (user?.email) {
+      const name = user.email.split("@")[0];
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
+    return "User";
+  };
+
+  const handleLogout = () => {
+    logout();
+    setMenuOpen(false);
+    router.push("/");
+  };
+
+  const handleDashboardClick = () => {
+    setMenuOpen(false);
+    if (user?.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/user");
+    }
+  };
   function isDropdownActive(items: { label: string; href: string }[]): boolean {
     return items.some((sub) => isLinkActive(sub.href));
   }
@@ -412,13 +441,30 @@ export default function Navbar() {
 
         {/* ── Desktop LOG IN + Hamburger ── */}
         <div className="flex items-center gap-3">
-          {/* LOG IN only on desktop */}
-          <Link
-            href="/auth/login"
-            className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
-          >
-            LOG IN
-          </Link>
+          {/* User Profile / LOG IN */}
+          {isMounted && isAuthenticated && user ? (
+            <div className="hidden lg:flex items-center gap-2">
+              <button
+                onClick={handleDashboardClick}
+                className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 transition-all duration-200 hover:bg-slate-200 active:scale-95"
+              >
+                {getUserName()}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-2 text-xs font-bold tracking-wider text-slate-600 border border-slate-200 transition-all duration-200 hover:border-red-300 hover:text-[#cf2f2a]"
+              >
+                LOGOUT
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
+            >
+              LOG IN
+            </Link>
+          )}
 
           {/* Hamburger (mobile) */}
           <button
@@ -554,14 +600,32 @@ export default function Navbar() {
               </Link>
             ),
           )}
-          {/* LOG IN inside mobile drawer */}
-          <Link
-            href="/auth/login"
-            className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-250 hover:bg-[#b92924] active:scale-95"
-            onClick={() => setMenuOpen(false)}
-          >
-            LOG IN
-          </Link>
+
+          {/* User Profile / LOG IN inside mobile drawer */}
+          {isMounted && isAuthenticated && user ? (
+            <div className="flex flex-col gap-3 border-t border-black/5 pt-4">
+              <button
+                onClick={handleDashboardClick}
+                className="w-full text-center rounded-lg bg-slate-100 py-3 text-sm font-bold text-slate-700 transition-all duration-150 hover:bg-slate-200 active:scale-95"
+              >
+                {getUserName()} - Dashboard
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full text-center rounded-lg border border-slate-200 py-3 text-sm font-bold text-slate-600 transition-all duration-150 hover:border-red-300 hover:text-[#cf2f2a]"
+              >
+                LOGOUT
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/auth/login"
+              className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-250 hover:bg-[#b92924] active:scale-95"
+              onClick={() => setMenuOpen(false)}
+            >
+              LOG IN
+            </Link>
+          )}
         </nav>
       </div>
     </header>

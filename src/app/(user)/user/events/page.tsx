@@ -51,23 +51,31 @@ export default function SavedEventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState<string>("all");
 
-  // Load Saved IDs from LocalStorage
-  const loadSavedIds = () => {
+  // Load Saved IDs from API
+  const loadSavedIds = async () => {
     if (!userEmail) return [];
-    const stored = localStorage.getItem(`saved_events_${userEmail}`);
-    if (stored) {
-      try {
-        return JSON.parse(stored) as number[];
-      } catch (e) {
-        console.error("Error parsing saved events:", e);
+    try {
+      const response = await fetch(
+        `/api/user/saved-events?email=${encodeURIComponent(userEmail)}`,
+      );
+      if (response.ok) {
+        const result = await response.json();
+        if (result.data) {
+          return result.data.map((item: any) => item.eventId);
+        }
       }
+    } catch (e) {
+      console.error("Error fetching saved events:", e);
     }
     return [];
   };
 
   useEffect(() => {
     if (userEmail) {
-      setSavedIds(loadSavedIds());
+      void (async () => {
+        const ids = await loadSavedIds();
+        setSavedIds(ids);
+      })();
     }
   }, [userEmail]);
 
@@ -75,8 +83,13 @@ export default function SavedEventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch("/api/admin/events", { cache: "no-store" });
-        const result = (await response.json()) as { data?: EventRow[]; error?: string };
+        const response = await fetch("/api/admin/events", {
+          cache: "no-store",
+        });
+        const result = (await response.json()) as {
+          data?: EventRow[];
+          error?: string;
+        };
         if (response.ok && result.data) {
           setAllEvents(result.data);
         }
@@ -89,12 +102,23 @@ export default function SavedEventsPage() {
     void fetchEvents();
   }, []);
 
-  const handleUnsave = (id: number) => {
+  const handleUnsave = async (id: number) => {
     if (!userEmail) return;
-    const currentSaved = loadSavedIds();
-    const updated = currentSaved.filter((savedId) => savedId !== id);
-    localStorage.setItem(`saved_events_${userEmail}`, JSON.stringify(updated));
-    setSavedIds(updated);
+    try {
+      const response = await fetch("/api/user/saved-events", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, eventId: id }),
+      });
+
+      if (response.ok) {
+        setSavedIds(savedIds.filter((savedId) => savedId !== id));
+      } else {
+        console.error("Failed to remove saved event");
+      }
+    } catch (error) {
+      console.error("Error removing saved event:", error);
+    }
   };
 
   // Filter & Search Logic
@@ -106,7 +130,8 @@ export default function SavedEventsPage() {
       (event.description &&
         event.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const matchesType = selectedType === "all" || event.eventType === selectedType;
+    const matchesType =
+      selectedType === "all" || event.eventType === selectedType;
 
     return matchesSearch && matchesType;
   });

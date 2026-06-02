@@ -23,17 +23,17 @@ type NavItem = {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    href: "/dashboard",
+    href: "/user",
     label: "Ringkasan",
     icon: LayoutDashboard,
   },
   {
-    href: "/dashboard/events",
+    href: "/user/events",
     label: "Event Tersimpan",
     icon: Bookmark,
   },
   {
-    href: "/dashboard/settings",
+    href: "/user/settings",
     label: "Pengaturan & Profil",
     icon: Settings,
   },
@@ -105,7 +105,9 @@ export default function DashboardLayout({
               {profileName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-bold text-slate-800">{profileName}</p>
+              <p className="truncate text-sm font-bold text-slate-800">
+                {profileName}
+              </p>
               <p className="truncate text-xs text-slate-500">{userEmail}</p>
             </div>
           </div>
@@ -126,7 +128,10 @@ export default function DashboardLayout({
                     : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
-                <Icon size={18} className={isActive ? "text-[#CB2229]" : "text-slate-400"} />
+                <Icon
+                  size={18}
+                  className={isActive ? "text-[#CB2229]" : "text-slate-400"}
+                />
                 {item.label}
               </Link>
             );
@@ -155,7 +160,9 @@ export default function DashboardLayout({
       {/* Mobile Drawer Sidebar */}
       <div
         className={`fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
-          isSidebarOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+          isSidebarOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
         }`}
         onClick={() => setIsSidebarOpen(false)}
       >
@@ -186,7 +193,9 @@ export default function DashboardLayout({
                 {profileName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-bold text-slate-800">{profileName}</p>
+                <p className="truncate text-sm font-bold text-slate-800">
+                  {profileName}
+                </p>
                 <p className="truncate text-xs text-slate-500">{userEmail}</p>
               </div>
             </div>
@@ -208,7 +217,10 @@ export default function DashboardLayout({
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                   }`}
                 >
-                  <Icon size={18} className={isActive ? "text-[#CB2229]" : "text-slate-400"} />
+                  <Icon
+                    size={18}
+                    className={isActive ? "text-[#CB2229]" : "text-slate-400"}
+                  />
                   {item.label}
                 </Link>
               );
@@ -253,9 +265,7 @@ export default function DashboardLayout({
 
         {/* Scrollable page body */}
         <main className="flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-          <div className="mx-auto max-w-5xl">
-            {children}
-          </div>
+          <div className="mx-auto max-w-5xl">{children}</div>
         </main>
       </div>
     </div>
