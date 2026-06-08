@@ -2,6 +2,46 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { events } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { supabase } from "@/lib/supabaseClient";
+
+// Helper: Upload file ke Supabase Storage dan return public URL
+async function uploadThumbnail(file: File): Promise<string> {
+  const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+  const filePath = `events/${uniqueFileName}`;
+
+  const { data, error } = await supabase.storage
+    .from("academy-events")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Gagal upload gambar: ${error.message}`);
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("academy-events")
+    .getPublicUrl(data.path);
+
+  return publicUrlData.publicUrl;
+}
+
+// Helper: Extract form fields dari FormData
+function extractFormFields(formData: FormData) {
+  return {
+    title: formData.get("title") as string,
+    description: (formData.get("description") as string) || null,
+    eventType: formData.get("eventType") as string,
+    deliveryMode: formData.get("deliveryMode") as string,
+    eventDate: formData.get("eventDate") as string,
+    startTime: (formData.get("startTime") as string) || null,
+    endTime: (formData.get("endTime") as string) || null,
+    quota: Number(formData.get("quota") ?? 0),
+    price: (formData.get("price") as string) ?? "0",
+    isPublished: formData.get("isPublished") === "true",
+  };
+}
 
 export async function GET() {
   try {
@@ -18,21 +58,31 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const formData = await request.formData();
+    const fields = extractFormFields(formData);
+
+    // Handle thumbnail upload
+    let thumbnailUrl: string | null = null;
+    const thumbnailFile = formData.get("thumbnail") as File | null;
+
+    if (thumbnailFile && thumbnailFile.size > 0) {
+      thumbnailUrl = await uploadThumbnail(thumbnailFile);
+    }
+
     const [inserted] = await db
       .insert(events)
       .values({
-        title: body.title,
-        description: body.description || null,
-        eventType: body.eventType,
-        deliveryMode: body.deliveryMode,
-        eventDate: body.eventDate,
-        startTime: body.startTime || null,
-        endTime: body.endTime || null,
-        quota: body.quota ?? 0,
-        price: body.price?.toString() ?? "0",
-        thumbnailUrl: body.thumbnailUrl || null,
-        isPublished: body.isPublished ?? true,
+        title: fields.title,
+        description: fields.description,
+        eventType: fields.eventType as "webinar" | "workshop" | "seminar" | "training",
+        deliveryMode: fields.deliveryMode as "online" | "face_to_face" | "hybrid",
+        eventDate: fields.eventDate,
+        startTime: fields.startTime,
+        endTime: fields.endTime,
+        quota: fields.quota,
+        price: fields.price,
+        thumbnailUrl,
+        isPublished: fields.isPublished,
       })
       .returning();
 
@@ -50,27 +100,42 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { id, ...values } = body;
+    const formData = await request.formData();
+    const id = Number(formData.get("id"));
 
     if (!id) {
       return NextResponse.json({ error: "ID wajib diisi." }, { status: 400 });
     }
 
+    const fields = extractFormFields(formData);
+
+    // Handle thumbnail upload
+    let thumbnailUrl: string | null = null;
+    const thumbnailFile = formData.get("thumbnail") as File | null;
+    const existingThumbnailUrl = formData.get("existingThumbnailUrl") as string | null;
+
+    if (thumbnailFile && thumbnailFile.size > 0) {
+      // Upload file baru
+      thumbnailUrl = await uploadThumbnail(thumbnailFile);
+    } else if (existingThumbnailUrl) {
+      // Pakai URL yang sudah ada (tidak ganti gambar)
+      thumbnailUrl = existingThumbnailUrl;
+    }
+
     const [updated] = await db
       .update(events)
       .set({
-        title: values.title,
-        description: values.description || null,
-        eventType: values.eventType,
-        deliveryMode: values.deliveryMode,
-        eventDate: values.eventDate,
-        startTime: values.startTime || null,
-        endTime: values.endTime || null,
-        quota: values.quota ?? 0,
-        price: values.price?.toString() ?? "0",
-        thumbnailUrl: values.thumbnailUrl || null,
-        isPublished: values.isPublished ?? true,
+        title: fields.title,
+        description: fields.description,
+        eventType: fields.eventType as "webinar" | "workshop" | "seminar" | "training",
+        deliveryMode: fields.deliveryMode as "online" | "face_to_face" | "hybrid",
+        eventDate: fields.eventDate,
+        startTime: fields.startTime,
+        endTime: fields.endTime,
+        quota: fields.quota,
+        price: fields.price,
+        thumbnailUrl,
+        isPublished: fields.isPublished,
         updatedAt: new Date(),
       })
       .where(eq(events.id, id))

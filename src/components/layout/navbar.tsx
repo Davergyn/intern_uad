@@ -4,6 +4,17 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
+import { supabase } from "@/lib/supabaseClient";
+
+// ─────────────────────────────────────────────
+//  PROPS
+// ─────────────────────────────────────────────
+interface NavbarProps {
+  /** full_name dari tabel users (Drizzle), di-fetch server-side */
+  userFullName?: string | null;
+  /** email dari Supabase auth session */
+  userEmail?: string | null;
+}
 
 // ─────────────────────────────────────────────
 //  NAV ICONS
@@ -342,14 +353,18 @@ const allSectionIds = [
   "contact-us",
 ];
 
-export default function Navbar() {
+export default function Navbar({ userFullName, userEmail }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileDropdown, setMobileDropdown] = useState<string | null>(null);
   const activeSection = useActiveSection(allSectionIds);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, loading, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
+
+  // Apakah user terautentikasi? Prioritaskan data dari server (Supabase cookies),
+  // fallback ke authContext (localStorage legacy).
+  const isLoggedIn = !!userEmail || (isMounted && isAuthenticated && !!user);
 
   useEffect(() => {
     setIsMounted(true);
@@ -363,8 +378,13 @@ export default function Navbar() {
     return "#" + activeSection === href;
   }
 
-  // Extract name from email
-  const getUserName = () => {
+  // Ambil nama pengguna: prioritas full_name dari DB → fallback email → "User"
+  const getUserDisplayName = () => {
+    if (userFullName) return userFullName;
+    if (userEmail) {
+      const name = userEmail.split("@")[0];
+      return name.charAt(0).toUpperCase() + name.slice(1);
+    }
     if (user?.email) {
       const name = user.email.split("@")[0];
       return name.charAt(0).toUpperCase() + name.slice(1);
@@ -372,10 +392,14 @@ export default function Navbar() {
     return "User";
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // 1. Sign out dari Supabase (hapus cookies)
+    await supabase.auth.signOut();
+    // 2. Sign out dari legacy authContext (hapus localStorage)
     logout();
     setMenuOpen(false);
-    router.push("/");
+    // 3. Hard refresh agar server component re-render tanpa session
+    window.location.href = "/";
   };
 
   const handleDashboardClick = () => {
@@ -442,13 +466,13 @@ export default function Navbar() {
         {/* ── Desktop LOG IN + Hamburger ── */}
         <div className="flex items-center gap-3">
           {/* User Profile / LOG IN */}
-          {isMounted && isAuthenticated && user ? (
+          {isLoggedIn ? (
             <div className="hidden lg:flex items-center gap-2">
               <button
                 onClick={handleDashboardClick}
                 className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-700 bg-slate-100 transition-all duration-200 hover:bg-slate-200 active:scale-95"
               >
-                {getUserName()}
+                {getUserDisplayName()}
               </button>
               <button
                 onClick={handleLogout}
@@ -602,13 +626,13 @@ export default function Navbar() {
           )}
 
           {/* User Profile / LOG IN inside mobile drawer */}
-          {isMounted && isAuthenticated && user ? (
+          {isLoggedIn ? (
             <div className="flex flex-col gap-3 border-t border-black/5 pt-4">
               <button
                 onClick={handleDashboardClick}
                 className="w-full text-center rounded-lg bg-slate-100 py-3 text-sm font-bold text-slate-700 transition-all duration-150 hover:bg-slate-200 active:scale-95"
               >
-                {getUserName()} - Dashboard
+                {getUserDisplayName()} - Dashboard
               </button>
               <button
                 onClick={handleLogout}

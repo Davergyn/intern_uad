@@ -1,10 +1,12 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef } from "react";
+import Image from "next/image";
 import {
   CalendarDays,
   CheckCircle2,
   Clock,
+  ImagePlus,
   Loader2,
   Pencil,
   Plus,
@@ -60,6 +62,9 @@ const EMPTY_FORM: EventFormValues = {
   thumbnailUrl: "",
   isPublished: true,
 };
+
+const ACCEPTED_IMAGE_TYPES = "image/png, image/jpeg, image/webp, image/jpg";
+const MAX_FILE_SIZE_MB = 5;
 
 function formatDate(date: string) {
   if (!date) return "-";
@@ -152,6 +157,11 @@ export default function ManageEventsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // State untuk file upload & preview
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const filtered = useMemo(() => {
     const keyword = search.toLowerCase();
     return events.filter(
@@ -182,22 +192,56 @@ export default function ManageEventsPage() {
     setIsLoading(false);
   };
 
-  const insertEvent = async (values: EventFormValues) => {
+  const insertEvent = async (values: EventFormValues, file: File | null) => {
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("description", values.description ?? "");
+    formData.append("eventType", values.eventType);
+    formData.append("deliveryMode", values.deliveryMode);
+    formData.append("eventDate", values.eventDate);
+    formData.append("startTime", values.startTime ?? "");
+    formData.append("endTime", values.endTime ?? "");
+    formData.append("quota", String(values.quota ?? 0));
+    formData.append("price", values.price ?? "0");
+    formData.append("isPublished", String(values.isPublished));
+
+    if (file) {
+      formData.append("thumbnail", file);
+    }
+
     const response = await fetch("/api/admin/events", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
+      body: formData,
     });
     const result = (await response.json()) as { error?: string };
     if (!response.ok) throw new Error(result.error || "Gagal menambah event.");
     await fetchEvents();
   };
 
-  const updateEvent = async (id: number, values: EventFormValues) => {
+  const updateEvent = async (id: number, values: EventFormValues, file: File | null) => {
+    const formData = new FormData();
+    formData.append("id", String(id));
+    formData.append("title", values.title);
+    formData.append("description", values.description ?? "");
+    formData.append("eventType", values.eventType);
+    formData.append("deliveryMode", values.deliveryMode);
+    formData.append("eventDate", values.eventDate);
+    formData.append("startTime", values.startTime ?? "");
+    formData.append("endTime", values.endTime ?? "");
+    formData.append("quota", String(values.quota ?? 0));
+    formData.append("price", values.price ?? "0");
+    formData.append("isPublished", String(values.isPublished));
+
+    // Kirim existing URL jika tidak mengganti gambar
+    if (file) {
+      formData.append("thumbnail", file);
+    } else if (values.thumbnailUrl) {
+      formData.append("existingThumbnailUrl", values.thumbnailUrl);
+    }
+
     const response = await fetch("/api/admin/events", {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, ...values }),
+      body: formData,
     });
     const result = (await response.json()) as { error?: string };
     if (!response.ok) throw new Error(result.error || "Gagal mengubah event.");
@@ -218,9 +262,60 @@ export default function ManageEventsPage() {
     void fetchEvents();
   }, []);
 
+  // Cleanup object URL saat komponen unmount atau preview berubah
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(thumbnailPreview);
+      }
+    };
+  }, [thumbnailPreview]);
+
+  const resetThumbnailState = () => {
+    if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(thumbnailPreview);
+    }
+    setThumbnailFile(null);
+    setThumbnailPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi ukuran file
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`);
+      e.target.value = "";
+      return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format file tidak didukung. Gunakan PNG, JPEG, atau WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+
+    // Revoke URL lama sebelum buat yang baru
+    if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(thumbnailPreview);
+    }
+
+    setThumbnailFile(file);
+    setThumbnailPreview(URL.createObjectURL(file));
+  };
+
   const openCreate = () => {
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetThumbnailState();
     setModalOpen(true);
   };
 
@@ -239,6 +334,12 @@ export default function ManageEventsPage() {
       thumbnailUrl: row.thumbnailUrl ?? "",
       isPublished: row.isPublished ?? true,
     });
+    // Reset file state, tapi set preview ke existing thumbnail
+    setThumbnailFile(null);
+    setThumbnailPreview(row.thumbnailUrl ?? null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setModalOpen(true);
   };
 
@@ -251,13 +352,14 @@ export default function ManageEventsPage() {
 
     try {
       if (editTarget) {
-        await updateEvent(editTarget.id, form);
+        await updateEvent(editTarget.id, form, thumbnailFile);
       } else {
-        await insertEvent(form);
+        await insertEvent(form, thumbnailFile);
       }
       setModalOpen(false);
       setEditTarget(null);
       setForm(EMPTY_FORM);
+      resetThumbnailState();
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -622,20 +724,69 @@ export default function ManageEventsPage() {
                 />
               </div>
 
+              {/* ====== THUMBNAIL UPLOAD SECTION ====== */}
               <div className="md:col-span-2">
                 <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                  Thumbnail URL
+                  Thumbnail Gambar
                 </label>
-                <input
-                  type="url"
-                  value={form.thumbnailUrl ?? ""}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, thumbnailUrl: e.target.value }))
-                  }
-                  placeholder="https://..."
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
-                />
+
+                {/* Image Preview */}
+                {thumbnailPreview && (
+                  <div className="relative mb-3 group">
+                    <div className="relative h-44 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                      <Image
+                        src={thumbnailPreview}
+                        alt="Preview thumbnail"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetThumbnailState();
+                        // Juga hapus thumbnailUrl dari form (untuk mode edit)
+                        setForm((f) => ({ ...f, thumbnailUrl: "" }));
+                      }}
+                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition-all hover:bg-red-600 hover:scale-110"
+                      title="Hapus gambar"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {/* File Input Area */}
+                <div
+                  className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center transition-all hover:border-[#CB2229]/40 hover:bg-red-50/30"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_IMAGE_TYPES}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CB2229]/10">
+                      <ImagePlus size={20} className="text-[#CB2229]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">
+                        {thumbnailPreview
+                          ? "Klik untuk ganti gambar"
+                          : "Klik untuk upload gambar"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        PNG, JPEG, WebP • Maks {MAX_FILE_SIZE_MB}MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+              {/* ====== END THUMBNAIL UPLOAD SECTION ====== */}
 
               <label className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 md:col-span-2">
                 <input
@@ -666,7 +817,11 @@ export default function ManageEventsPage() {
                 className="flex items-center gap-2 rounded-xl bg-[#CB2229] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-70"
               >
                 {isSaving && <Loader2 size={15} className="animate-spin" />}
-                {editTarget ? "Simpan Perubahan" : "Tambah Event"}
+                {isSaving
+                  ? "Sedang Menyimpan..."
+                  : editTarget
+                    ? "Simpan Perubahan"
+                    : "Tambah Event"}
               </button>
             </div>
           </form>

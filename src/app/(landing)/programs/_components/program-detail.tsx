@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { notFound } from "next/navigation";
 import ProgramImageSlider from "./program-image-slider";
 import { db } from "@/db";
-import { programs } from "@/db/schema";
+import { programs, partnerships } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import type { ProgramKategori, ProgramRow } from "@/types/database";
+import type { ProgramRow } from "@/types/database";
+
+const validCategories = ["training-of-trainer", "seminar", "workshop"];
 
 type ProgramDetailProps = {
   slug: string;
@@ -19,23 +22,49 @@ export default async function ProgramDetail({
   fallbackDescription,
   fallbackBenefits,
 }: ProgramDetailProps) {
-  const programImages: ProgramRow[] = await db
-    .select()
-    .from(programs)
-    .where(
-      and(
-        eq(programs.kategori, slug as ProgramKategori),
-        eq(programs.isActive, true),
-      ),
-    );
+  // Tentukan data gambar berdasarkan slug
+  let images: { id: number; imageUrl: string; title: string }[] = [];
 
-  const images = programImages
-    .filter((program) => Boolean(program.imageUrl))
-    .map((program) => ({
-      id: program.id,
-      imageUrl: program.imageUrl as string,
-      title: program.title || fallbackTitle,
-    }));
+  if (slug === "partnership") {
+    // Query ke tabel partnerships (bukan tabel programs)
+    const partnerData = await db.select().from(partnerships);
+
+    images = partnerData
+      .filter((p) => Boolean(p.logoUrl))
+      .map((p) => ({
+        id: p.id,
+        imageUrl: p.logoUrl,
+        title: p.name || fallbackTitle,
+      }));
+  } else {
+    // Validasi: pastikan slug termasuk ENUM yang valid
+    if (!validCategories.includes(slug)) {
+      notFound();
+    }
+
+    // Query ke tabel programs seperti biasa
+    // Perbaikan TypeScript Casting & Penambahan Kurung Tutup
+    const programImages: ProgramRow[] = await db
+      .select()
+      .from(programs)
+      .where(
+        and(
+          eq(
+            programs.kategori, 
+            slug as "training-of-trainer" | "seminar" | "workshop"
+          ),
+          eq(programs.isActive, true)
+        )
+      );
+
+    images = programImages
+      .filter((program) => Boolean(program.imageUrl))
+      .map((program) => ({
+        id: program.id,
+        imageUrl: program.imageUrl as string,
+        title: program.title || fallbackTitle,
+      }));
+  }
 
   return (
     <main className="min-h-screen bg-white text-[#111827]">

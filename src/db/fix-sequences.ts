@@ -14,6 +14,7 @@ const tables = [
   "partnerships",
   "event_registrations",
   "user_saved_materials",
+  "user_saved_events",
   "event_trainers",
 ];
 

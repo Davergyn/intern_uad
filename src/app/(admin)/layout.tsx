@@ -89,11 +89,10 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
               key={href}
               href={href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-                isActive
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive
                   ? "bg-[#CB2229] text-white shadow-lg shadow-red-900/30"
                   : "text-slate-300 hover:bg-slate-700/60 hover:text-white"
-              }`}
+                }`}
             >
               <Icon size={18} className="flex-shrink-0" />
               <span>{label}</span>
