@@ -1,6 +1,7 @@
 "use client";
 
-import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState, useRef } from "react";
+import Image from "next/image";
 import {
   Plus,
   Search,
@@ -11,6 +12,7 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  ImagePlus,
 } from "lucide-react";
 import type { TrainerRow } from "@/types/database";
 
@@ -28,19 +30,12 @@ const EMPTY_FORM: TrainerFormData = {
   isActive: true,
 };
 
+const ACCEPTED_IMAGE_TYPES = "image/png, image/jpeg, image/webp, image/jpg";
+const MAX_FILE_SIZE_MB = 5;
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) return error.message;
   return fallback;
-}
-
-function isValidImageUrl(url: string): boolean {
-  if (!url || !url.trim()) return false;
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function AvatarDisplay({
@@ -57,6 +52,11 @@ function AvatarDisplay({
     md: "w-14 h-14 text-lg",
     lg: "w-20 h-20 text-2xl",
   };
+  const imgSizes = {
+    sm: 36,
+    md: 56,
+    lg: 80,
+  };
   const initials = name
     .split(" ")
     .slice(0, 2)
@@ -64,12 +64,15 @@ function AvatarDisplay({
     .join("")
     .toUpperCase();
 
-  if (url && isValidImageUrl(url)) {
+  if (url) {
     return (
-      <img
+      <Image
         src={url}
         alt={name}
+        width={imgSizes[size]}
+        height={imgSizes[size]}
         className={`${sizes[size]} rounded-full object-cover shrink-0 border-2 border-white shadow`}
+        unoptimized
       />
     );
   }
@@ -94,6 +97,11 @@ export default function ManageTrainersPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // State untuk file upload & preview
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter trainers berdasarkan search
   const filteredTrainers = useMemo(() => {
@@ -135,6 +143,56 @@ export default function ManageTrainersPage() {
     void fetchTrainers();
   }, []);
 
+  // Cleanup object URL saat komponen unmount atau preview berubah
+  useEffect(() => {
+    return () => {
+      if (photoPreview && photoPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
+  const resetPhotoState = () => {
+    if (photoPreview && photoPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi ukuran file
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`);
+      e.target.value = "";
+      return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format file tidak didukung. Gunakan PNG, JPEG, atau WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+
+    // Revoke URL lama sebelum buat yang baru
+    if (photoPreview && photoPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(photoPreview);
+    }
+
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
   const showSuccess = (message: string) => {
     setSuccess(message);
     window.setTimeout(() => setSuccess(""), 2500);
@@ -145,6 +203,7 @@ export default function ManageTrainersPage() {
     setSuccess("");
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetPhotoState();
     setModalOpen(true);
   };
 
@@ -158,7 +217,55 @@ export default function ManageTrainersPage() {
       photoUrl: trainer.photoUrl ?? "",
       isActive: trainer.isActive ?? true,
     });
+    // Reset file state, tapi set preview ke existing photo
+    setPhotoFile(null);
+    setPhotoPreview(trainer.photoUrl ?? null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setModalOpen(true);
+  };
+
+  const insertTrainer = async (values: TrainerFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("roleTitle", values.roleTitle ?? "");
+    formData.append("isActive", String(values.isActive));
+
+    if (file) {
+      formData.append("photo", file);
+    }
+
+    const response = await fetch("/api/admin/trainers", {
+      method: "POST",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal menambah trainer.");
+    await fetchTrainers();
+  };
+
+  const updateTrainer = async (id: number, values: TrainerFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("id", String(id));
+    formData.append("name", values.name);
+    formData.append("roleTitle", values.roleTitle ?? "");
+    formData.append("isActive", String(values.isActive));
+
+    // Kirim existing URL jika tidak mengganti foto
+    if (file) {
+      formData.append("photo", file);
+    } else if (values.photoUrl) {
+      formData.append("existingPhotoUrl", values.photoUrl);
+    }
+
+    const response = await fetch("/api/admin/trainers", {
+      method: "PUT",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal mengubah trainer.");
+    await fetchTrainers();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -169,47 +276,23 @@ export default function ManageTrainersPage() {
       return;
     }
 
-    if (form.photoUrl && !isValidImageUrl(form.photoUrl)) {
-      setError("URL Foto Profil tidak valid.");
-      return;
-    }
-
     setIsSaving(true);
     setError("");
     setSuccess("");
 
     try {
-      const payload = {
-        name: form.name.trim(),
-        roleTitle: form.roleTitle?.trim() || null,
-        photoUrl: form.photoUrl?.trim() || null,
-        isActive: form.isActive,
-      };
-
       if (editTarget) {
-        const response = await fetch("/api/admin/trainers", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editTarget.id, ...payload }),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Gagal mengubah trainer.");
+        await updateTrainer(editTarget.id, form, photoFile);
         showSuccess("Trainer berhasil diperbarui.");
       } else {
-        const response = await fetch("/api/admin/trainers", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Gagal menambah trainer.");
+        await insertTrainer(form, photoFile);
         showSuccess("Trainer berhasil ditambahkan.");
       }
 
       setModalOpen(false);
       setEditTarget(null);
       setForm(EMPTY_FORM);
-      await fetchTrainers();
+      resetPhotoState();
     } catch (err) {
       setError(getErrorMessage(err, "Gagal menyimpan data."));
     } finally {
@@ -378,9 +461,9 @@ export default function ManageTrainersPage() {
               </button>
             </div>
 
-            {/* Preview Avatar */}
+            {/* Preview Avatar - gunakan photoPreview (bisa blob atau existing URL) */}
             <div className="flex justify-center">
-              <AvatarDisplay name={form.name} url={form.photoUrl} size="lg" />
+              <AvatarDisplay name={form.name} url={photoPreview} size="lg" />
             </div>
 
             <div className="space-y-4">
@@ -415,30 +498,68 @@ export default function ManageTrainersPage() {
                 />
               </div>
 
-              {/* URL Foto Profil */}
+              {/* ====== PHOTO UPLOAD SECTION ====== */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  URL Foto Profil
+                  Foto Profil
                 </label>
-                <input
-                  type="url"
-                  value={form.photoUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, photoUrl: e.target.value }))
-                  }
-                  placeholder="https://... (kosongkan untuk avatar inisial)"
-                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
-                />
-                {form.photoUrl && isValidImageUrl(form.photoUrl) && (
-                  <div className="mt-2 flex justify-center rounded-xl bg-slate-50 p-3">
-                    <img
-                      src={form.photoUrl}
-                      alt="Preview"
-                      className="max-h-40 max-w-full rounded-lg object-cover"
-                    />
+
+                {/* Image Preview */}
+                {photoPreview && (
+                  <div className="relative mb-3 group">
+                    <div className="relative h-44 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                      <Image
+                        src={photoPreview}
+                        alt="Preview foto"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetPhotoState();
+                        setForm((f) => ({ ...f, photoUrl: "" }));
+                      }}
+                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition-all hover:bg-red-600 hover:scale-110"
+                      title="Hapus foto"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
+
+                {/* File Input Area */}
+                <div
+                  className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center transition-all hover:border-[#CB2229]/40 hover:bg-red-50/30"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_IMAGE_TYPES}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CB2229]/10">
+                      <ImagePlus size={20} className="text-[#CB2229]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">
+                        {photoPreview
+                          ? "Klik untuk ganti foto"
+                          : "Klik untuk upload foto"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        PNG, JPEG, WebP • Maks {MAX_FILE_SIZE_MB}MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+              {/* ====== END PHOTO UPLOAD SECTION ====== */}
 
               {/* Status Aktif */}
               <div>
@@ -478,7 +599,11 @@ export default function ManageTrainersPage() {
                 className="flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[#CB2229] hover:bg-red-700 text-white rounded-xl transition-colors disabled:opacity-70"
               >
                 {isSaving && <Loader2 size={15} className="animate-spin" />}
-                {editTarget ? "Simpan Perubahan" : "Tambah Trainer"}
+                {isSaving
+                  ? "Menyimpan..."
+                  : editTarget
+                    ? "Simpan Perubahan"
+                    : "Tambah Trainer"}
               </button>
             </div>
           </form>

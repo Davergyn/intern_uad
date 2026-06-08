@@ -1,6 +1,7 @@
 "use client";
 
-import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState, useRef } from "react";
+import Image from "next/image";
 import {
   Plus,
   Search,
@@ -12,6 +13,7 @@ import {
   Loader2,
   Eye,
   EyeOff,
+  ImagePlus,
 } from "lucide-react";
 import type { MaterialRow } from "@/types/database";
 
@@ -40,12 +42,15 @@ const EMPTY_FORM: MaterialFormData = {
   isActive: true,
 };
 
+const ACCEPTED_IMAGE_TYPES = "image/png, image/jpeg, image/webp, image/jpg";
+const MAX_FILE_SIZE_MB = 5;
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) return error.message;
   return fallback;
 }
 
-function isValidImageUrl(url: string): boolean {
+function isValidUrl(url: string): boolean {
   if (!url || !url.trim()) return false;
   try {
     new URL(url);
@@ -67,6 +72,11 @@ export default function ManageMaterialPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+
+  // State untuk file upload & preview
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter materials berdasarkan search
   const filteredMaterials = useMemo(() => {
@@ -105,6 +115,56 @@ export default function ManageMaterialPage() {
     void fetchMaterials();
   }, []);
 
+  // Cleanup object URL saat komponen unmount atau preview berubah
+  useEffect(() => {
+    return () => {
+      if (coverPreview && coverPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(coverPreview);
+      }
+    };
+  }, [coverPreview]);
+
+  const resetCoverState = () => {
+    if (coverPreview && coverPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(coverPreview);
+    }
+    setCoverFile(null);
+    setCoverPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi ukuran file
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`);
+      e.target.value = "";
+      return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format file tidak didukung. Gunakan PNG, JPEG, atau WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+
+    // Revoke URL lama sebelum buat yang baru
+    if (coverPreview && coverPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(coverPreview);
+    }
+
+    setCoverFile(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
+
   const showSuccess = (message: string) => {
     setSuccess(message);
     window.setTimeout(() => setSuccess(""), 2500);
@@ -115,6 +175,7 @@ export default function ManageMaterialPage() {
     setSuccess("");
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetCoverState();
     setModalOpen(true);
   };
 
@@ -129,7 +190,57 @@ export default function ManageMaterialPage() {
       coverUrl: material.coverUrl ?? "",
       isActive: material.isActive ?? true,
     });
+    // Reset file state, tapi set preview ke existing cover
+    setCoverFile(null);
+    setCoverPreview(material.coverUrl ?? null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setModalOpen(true);
+  };
+
+  const insertMaterial = async (values: MaterialFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("description", values.description ?? "");
+    formData.append("linkUrl", values.linkUrl ?? "");
+    formData.append("isActive", String(values.isActive));
+
+    if (file) {
+      formData.append("cover", file);
+    }
+
+    const response = await fetch("/api/admin/materi", {
+      method: "POST",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal menambah materi.");
+    await fetchMaterials();
+  };
+
+  const updateMaterial = async (id: number, values: MaterialFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("id", String(id));
+    formData.append("title", values.title);
+    formData.append("description", values.description ?? "");
+    formData.append("linkUrl", values.linkUrl ?? "");
+    formData.append("isActive", String(values.isActive));
+
+    // Kirim existing URL jika tidak mengganti cover
+    if (file) {
+      formData.append("cover", file);
+    } else if (values.coverUrl) {
+      formData.append("existingCoverUrl", values.coverUrl);
+    }
+
+    const response = await fetch("/api/admin/materi", {
+      method: "PUT",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal mengubah materi.");
+    await fetchMaterials();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -140,13 +251,8 @@ export default function ManageMaterialPage() {
       return;
     }
 
-    if (form.linkUrl && !isValidImageUrl(form.linkUrl)) {
+    if (form.linkUrl && !isValidUrl(form.linkUrl)) {
       setError("Link Aksi harus berupa URL yang valid.");
-      return;
-    }
-
-    if (form.coverUrl && !isValidImageUrl(form.coverUrl)) {
-      setError("URL Cover harus berupa URL yang valid.");
       return;
     }
 
@@ -155,41 +261,18 @@ export default function ManageMaterialPage() {
     setSuccess("");
 
     try {
-      // Payload: title, description, linkUrl, coverUrl, isActive
-      const payload = {
-        title: form.title.trim(),
-        description: form.description?.trim() || null,
-        linkUrl: form.linkUrl?.trim() || null,
-        coverUrl: form.coverUrl?.trim() || null,
-        isActive: form.isActive,
-      };
-
       if (editTarget) {
-        // UPDATE
-        const response = await fetch("/api/admin/materi", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editTarget.id, ...payload }),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Gagal mengubah materi.");
+        await updateMaterial(editTarget.id, form, coverFile);
         showSuccess("Materi berhasil diperbarui.");
       } else {
-        // INSERT
-        const response = await fetch("/api/admin/materi", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Gagal menambah materi.");
+        await insertMaterial(form, coverFile);
         showSuccess("Materi berhasil ditambahkan.");
       }
 
       setModalOpen(false);
       setEditTarget(null);
       setForm(EMPTY_FORM);
-      await fetchMaterials();
+      resetCoverState();
     } catch (err) {
       setError(getErrorMessage(err, "Gagal menyimpan data."));
     } finally {
@@ -296,11 +379,13 @@ export default function ManageMaterialPage() {
                 <div
                   className={`h-36 bg-linear-to-br ${COVER_GRADIENTS[mat.id % COVER_GRADIENTS.length]} flex items-center justify-center relative overflow-hidden`}
                 >
-                  {mat.coverUrl && isValidImageUrl(mat.coverUrl) ? (
-                    <img
+                  {mat.coverUrl ? (
+                    <Image
                       src={mat.coverUrl}
                       alt={mat.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
+                      unoptimized
                     />
                   ) : (
                     <BookOpen size={40} className="text-white/50" />
@@ -401,6 +486,7 @@ export default function ManageMaterialPage() {
               <thead>
                 <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wide">
                   <th className="px-6 py-3">No</th>
+                  <th className="px-6 py-3">Cover</th>
                   <th className="px-6 py-3">Judul Materi</th>
                   <th className="px-6 py-3">Link</th>
                   <th className="px-6 py-3">Status</th>
@@ -411,7 +497,7 @@ export default function ManageMaterialPage() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="py-8 text-center text-slate-400 text-sm"
                     >
                       <Loader2
@@ -424,7 +510,7 @@ export default function ManageMaterialPage() {
                 ) : filteredMaterials.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="py-12 text-center text-slate-400 text-sm"
                     >
                       {search
@@ -440,6 +526,22 @@ export default function ManageMaterialPage() {
                     >
                       <td className="px-6 py-4 text-sm text-slate-500">
                         {idx + 1}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="h-10 w-16 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center">
+                          {mat.coverUrl ? (
+                            <Image
+                              src={mat.coverUrl}
+                              alt={mat.title}
+                              width={64}
+                              height={40}
+                              className="h-full w-full object-cover"
+                              unoptimized
+                            />
+                          ) : (
+                            <BookOpen size={16} className="text-slate-400" />
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-slate-800 max-w-xs">
                         <p className="truncate">{mat.title}</p>
@@ -534,23 +636,6 @@ export default function ManageMaterialPage() {
               </button>
             </div>
 
-            {/* Preview Cover */}
-            {form.coverUrl && isValidImageUrl(form.coverUrl) ? (
-              <div className="flex justify-center rounded-xl bg-slate-50 p-3">
-                <img
-                  src={form.coverUrl}
-                  alt="Preview"
-                  className="max-h-40 max-w-full rounded-lg object-cover"
-                />
-              </div>
-            ) : (
-              <div
-                className={`h-32 bg-linear-to-br ${COVER_GRADIENTS[Math.floor(Math.random() * COVER_GRADIENTS.length)]} rounded-xl flex items-center justify-center`}
-              >
-                <BookOpen size={40} className="text-white/50" />
-              </div>
-            )}
-
             <div className="space-y-4">
               {/* Judul Materi */}
               <div>
@@ -603,21 +688,68 @@ export default function ManageMaterialPage() {
                 />
               </div>
 
-              {/* URL Cover */}
+              {/* ====== COVER UPLOAD SECTION ====== */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  URL Cover (opsional)
+                  Cover Materi (opsional)
                 </label>
-                <input
-                  type="url"
-                  value={form.coverUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, coverUrl: e.target.value }))
-                  }
-                  placeholder="https://... (kosongkan untuk gradient)"
-                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
-                />
+
+                {/* Image Preview */}
+                {coverPreview && (
+                  <div className="relative mb-3 group">
+                    <div className="relative h-44 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                      <Image
+                        src={coverPreview}
+                        alt="Preview cover"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetCoverState();
+                        setForm((f) => ({ ...f, coverUrl: "" }));
+                      }}
+                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition-all hover:bg-red-600 hover:scale-110"
+                      title="Hapus cover"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                )}
+
+                {/* File Input Area */}
+                <div
+                  className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center transition-all hover:border-[#CB2229]/40 hover:bg-red-50/30"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_IMAGE_TYPES}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CB2229]/10">
+                      <ImagePlus size={20} className="text-[#CB2229]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">
+                        {coverPreview
+                          ? "Klik untuk ganti cover"
+                          : "Klik untuk upload cover"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        PNG, JPEG, WebP • Maks {MAX_FILE_SIZE_MB}MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+              {/* ====== END COVER UPLOAD SECTION ====== */}
 
               {/* Status Aktif */}
               <div>
@@ -657,7 +789,11 @@ export default function ManageMaterialPage() {
                 className="flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[#CB2229] hover:bg-red-700 text-white rounded-xl transition-colors disabled:opacity-70"
               >
                 {isSaving && <Loader2 size={15} className="animate-spin" />}
-                {editTarget ? "Simpan Perubahan" : "Tambah Materi"}
+                {isSaving
+                  ? "Menyimpan..."
+                  : editTarget
+                    ? "Simpan Perubahan"
+                    : "Tambah Materi"}
               </button>
             </div>
           </form>

@@ -1,6 +1,7 @@
 "use client";
 
-import React, { FormEvent, useEffect, useMemo, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState, useRef } from "react";
+import Image from "next/image";
 import {
   Plus,
   Search,
@@ -10,6 +11,7 @@ import {
   Loader2,
   Image as ImageIcon,
   Handshake,
+  ImagePlus,
 } from "lucide-react";
 
 type PartnershipRow = {
@@ -31,19 +33,12 @@ const EMPTY_FORM: PartnershipFormData = {
   logoUrl: "",
 };
 
+const ACCEPTED_IMAGE_TYPES = "image/png, image/jpeg, image/webp, image/jpg";
+const MAX_FILE_SIZE_MB = 5;
+
 function getErrorMessage(error: unknown, fallback: string) {
   if (error instanceof Error) return error.message;
   return fallback;
-}
-
-function isValidImageUrl(url: string): boolean {
-  if (!url || !url.trim()) return false;
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function LogoDisplay({
@@ -60,16 +55,24 @@ function LogoDisplay({
     md: "w-16 h-16",
     lg: "w-24 h-24",
   };
+  const imgSizes = {
+    sm: 40,
+    md: 64,
+    lg: 96,
+  };
 
-  if (url && isValidImageUrl(url)) {
+  if (url) {
     return (
       <div
         className={`${sizes[size]} rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center p-2 shrink-0`}
       >
-        <img
+        <Image
           src={url}
           alt={name}
+          width={imgSizes[size]}
+          height={imgSizes[size]}
           className="max-h-full max-w-full object-contain"
+          unoptimized
         />
       </div>
     );
@@ -95,6 +98,11 @@ export default function ManagePartnershipsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // State untuk file upload & preview
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter partnerships berdasarkan search
   const filteredPartnerships = useMemo(() => {
@@ -135,6 +143,56 @@ export default function ManagePartnershipsPage() {
     void fetchPartnerships();
   }, []);
 
+  // Cleanup object URL saat komponen unmount atau preview berubah
+  useEffect(() => {
+    return () => {
+      if (logoPreview && logoPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(logoPreview);
+      }
+    };
+  }, [logoPreview]);
+
+  const resetLogoState = () => {
+    if (logoPreview && logoPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(logoPreview);
+    }
+    setLogoFile(null);
+    setLogoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi ukuran file
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`);
+      e.target.value = "";
+      return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format file tidak didukung. Gunakan PNG, JPEG, atau WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+
+    // Revoke URL lama sebelum buat yang baru
+    if (logoPreview && logoPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(logoPreview);
+    }
+
+    setLogoFile(file);
+    setLogoPreview(URL.createObjectURL(file));
+  };
+
   const showSuccess = (message: string) => {
     setSuccess(message);
     window.setTimeout(() => setSuccess(""), 2500);
@@ -145,6 +203,7 @@ export default function ManagePartnershipsPage() {
     setSuccess("");
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetLogoState();
     setModalOpen(true);
   };
 
@@ -156,7 +215,51 @@ export default function ManagePartnershipsPage() {
       name: partnership.name,
       logoUrl: partnership.logoUrl,
     });
+    // Reset file state, tapi set preview ke existing logo
+    setLogoFile(null);
+    setLogoPreview(partnership.logoUrl ?? null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setModalOpen(true);
+  };
+
+  const insertPartnership = async (values: PartnershipFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("name", values.name);
+
+    if (file) {
+      formData.append("logo", file);
+    }
+
+    const response = await fetch("/api/admin/partnerships", {
+      method: "POST",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal menambah partnership.");
+    await fetchPartnerships();
+  };
+
+  const updatePartnership = async (id: number, values: PartnershipFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("id", String(id));
+    formData.append("name", values.name);
+
+    // Kirim existing URL jika tidak mengganti logo
+    if (file) {
+      formData.append("logo", file);
+    } else if (values.logoUrl) {
+      formData.append("existingLogoUrl", values.logoUrl);
+    }
+
+    const response = await fetch("/api/admin/partnerships", {
+      method: "PUT",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal mengubah partnership.");
+    await fetchPartnerships();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -167,13 +270,9 @@ export default function ManagePartnershipsPage() {
       return;
     }
 
-    if (!form.logoUrl.trim()) {
-      setError("URL Logo wajib diisi.");
-      return;
-    }
-
-    if (!isValidImageUrl(form.logoUrl)) {
-      setError("URL Logo tidak valid. Pastikan URL diawali dengan http:// atau https://");
+    // Validasi: saat create harus ada file, saat edit boleh pakai existing
+    if (!editTarget && !logoFile) {
+      setError("Logo partner wajib diupload.");
       return;
     }
 
@@ -182,37 +281,18 @@ export default function ManagePartnershipsPage() {
     setSuccess("");
 
     try {
-      const payload = {
-        name: form.name.trim(),
-        logoUrl: form.logoUrl.trim(),
-      };
-
       if (editTarget) {
-        const response = await fetch("/api/admin/partnerships", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editTarget.id, ...payload }),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok)
-          throw new Error(result.error || "Gagal mengubah partnership.");
+        await updatePartnership(editTarget.id, form, logoFile);
         showSuccess("Partnership berhasil diperbarui.");
       } else {
-        const response = await fetch("/api/admin/partnerships", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok)
-          throw new Error(result.error || "Gagal menambah partnership.");
+        await insertPartnership(form, logoFile);
         showSuccess("Partnership berhasil ditambahkan.");
       }
 
       setModalOpen(false);
       setEditTarget(null);
       setForm(EMPTY_FORM);
-      await fetchPartnerships();
+      resetLogoState();
     } catch (err) {
       setError(getErrorMessage(err, "Gagal menyimpan data."));
     } finally {
@@ -332,9 +412,6 @@ export default function ManagePartnershipsPage() {
                 <h3 className="font-bold text-slate-800 text-sm leading-snug">
                   {partnership.name}
                 </h3>
-                <p className="text-[10px] text-slate-400 mt-1 break-all line-clamp-1">
-                  {partnership.logoUrl}
-                </p>
               </div>
 
               {/* Action Buttons */}
@@ -391,9 +468,9 @@ export default function ManagePartnershipsPage() {
               </button>
             </div>
 
-            {/* Preview Logo */}
+            {/* Preview Logo - gunakan logoPreview (bisa blob atau existing URL) */}
             <div className="flex justify-center">
-              <LogoDisplay name={form.name} url={form.logoUrl} size="lg" />
+              <LogoDisplay name={form.name} url={logoPreview} size="lg" />
             </div>
 
             <div className="space-y-4">
@@ -413,31 +490,69 @@ export default function ManagePartnershipsPage() {
                 />
               </div>
 
-              {/* URL Logo */}
+              {/* ====== LOGO UPLOAD SECTION ====== */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  URL Logo *
+                  Logo Partner {!editTarget && "*"}
                 </label>
-                <input
-                  type="url"
-                  value={form.logoUrl}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, logoUrl: e.target.value }))
-                  }
-                  placeholder="https://example.com/logo.png"
-                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
-                  required
-                />
-                {form.logoUrl && isValidImageUrl(form.logoUrl) && (
-                  <div className="mt-2 flex justify-center rounded-xl bg-slate-50 p-4">
-                    <img
-                      src={form.logoUrl}
-                      alt="Preview Logo"
-                      className="max-h-24 max-w-full object-contain"
-                    />
+
+                {/* Image Preview */}
+                {logoPreview && (
+                  <div className="relative mb-3 group">
+                    <div className="relative h-36 w-full overflow-hidden rounded-xl border border-slate-200 bg-white flex items-center justify-center p-4">
+                      <Image
+                        src={logoPreview}
+                        alt="Preview logo"
+                        width={200}
+                        height={120}
+                        className="max-h-full max-w-full object-contain"
+                        unoptimized
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetLogoState();
+                        setForm((f) => ({ ...f, logoUrl: "" }));
+                      }}
+                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition-all hover:bg-red-600 hover:scale-110"
+                      title="Hapus logo"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
+
+                {/* File Input Area */}
+                <div
+                  className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center transition-all hover:border-[#CB2229]/40 hover:bg-red-50/30"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_IMAGE_TYPES}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CB2229]/10">
+                      <ImagePlus size={20} className="text-[#CB2229]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">
+                        {logoPreview
+                          ? "Klik untuk ganti logo"
+                          : "Klik untuk upload logo"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        PNG, JPEG, WebP • Maks {MAX_FILE_SIZE_MB}MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+              {/* ====== END LOGO UPLOAD SECTION ====== */}
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
@@ -454,7 +569,11 @@ export default function ManagePartnershipsPage() {
                 className="flex items-center gap-2 px-5 py-2 text-sm font-semibold bg-[#CB2229] hover:bg-red-700 text-white rounded-xl transition-colors disabled:opacity-70"
               >
                 {isSaving && <Loader2 size={15} className="animate-spin" />}
-                {editTarget ? "Simpan Perubahan" : "Tambah Partner"}
+                {isSaving
+                  ? "Menyimpan..."
+                  : editTarget
+                    ? "Simpan Perubahan"
+                    : "Tambah Partner"}
               </button>
             </div>
           </form>

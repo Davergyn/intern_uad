@@ -1,10 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState, useRef } from "react";
+import Image from "next/image";
 import {
   Eye,
   EyeOff,
-  ImageIcon,
+  ImagePlus,
   Loader2,
   Pencil,
   Plus,
@@ -16,7 +17,7 @@ import type { ProgramKategori, ProgramRow } from "@/types/database";
 
 type CategoryFilter = "all" | ProgramKategori;
 
-type ProgramPhotoForm = {
+type ProgramFormData = {
   kategori: ProgramKategori;
   title: string;
   imageUrl: string;
@@ -42,12 +43,15 @@ const KATEGORI_OPTIONS: Array<{
   },
 ];
 
-const EMPTY_FORM: ProgramPhotoForm = {
+const EMPTY_FORM: ProgramFormData = {
   kategori: "training-of-trainer",
   title: "",
   imageUrl: "",
   isActive: true,
 };
+
+const ACCEPTED_IMAGE_TYPES = "image/png, image/jpeg, image/webp, image/jpg";
+const MAX_FILE_SIZE_MB = 5;
 
 function getKategoriMeta(kategori: ProgramKategori) {
   return (
@@ -61,16 +65,6 @@ function getErrorMessage(error: unknown, fallback: string) {
   return fallback;
 }
 
-function isValidImageUrl(url: string): boolean {
-  if (!url.trim()) return false;
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 export default function ManageProgramsPage() {
   const [items, setItems] = useState<ProgramRow[]>([]);
   const [search, setSearch] = useState("");
@@ -78,11 +72,16 @@ export default function ManageProgramsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ProgramRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ProgramRow | null>(null);
-  const [form, setForm] = useState<ProgramPhotoForm>(EMPTY_FORM);
+  const [form, setForm] = useState<ProgramFormData>(EMPTY_FORM);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // State untuk file upload & preview
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const filteredItems = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -90,8 +89,7 @@ export default function ManageProgramsPage() {
     return items.filter((item) => {
       const matchesSearch =
         !keyword ||
-        item.title.toLowerCase().includes(keyword) ||
-        (item.imageUrl ?? "").toLowerCase().includes(keyword);
+        item.title.toLowerCase().includes(keyword);
       const matchesCategory =
         categoryFilter === "all" || item.kategori === categoryFilter;
 
@@ -129,6 +127,56 @@ export default function ManageProgramsPage() {
     void fetchItems();
   }, []);
 
+  // Cleanup object URL saat komponen unmount atau preview berubah
+  useEffect(() => {
+    return () => {
+      if (imagePreview && imagePreview.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
+
+  const resetImageState = () => {
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi ukuran file
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setError(`Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`);
+      e.target.value = "";
+      return;
+    }
+
+    // Validasi tipe file
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Format file tidak didukung. Gunakan PNG, JPEG, atau WebP.");
+      e.target.value = "";
+      return;
+    }
+
+    setError("");
+
+    // Revoke URL lama sebelum buat yang baru
+    if (imagePreview && imagePreview.startsWith("blob:")) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const showSuccess = (message: string) => {
     setSuccess(message);
     window.setTimeout(() => setSuccess(""), 2500);
@@ -139,6 +187,7 @@ export default function ManageProgramsPage() {
     setSuccess("");
     setEditTarget(null);
     setForm(EMPTY_FORM);
+    resetImageState();
     setModalOpen(true);
   };
 
@@ -152,7 +201,55 @@ export default function ManageProgramsPage() {
       imageUrl: row.imageUrl ?? "",
       isActive: row.isActive ?? true,
     });
+    // Reset file state, tapi set preview ke existing image
+    setImageFile(null);
+    setImagePreview(row.imageUrl ?? null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
     setModalOpen(true);
+  };
+
+  const insertProgram = async (values: ProgramFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("kategori", values.kategori);
+    formData.append("title", values.title);
+    formData.append("isActive", String(values.isActive));
+
+    if (file) {
+      formData.append("image", file);
+    }
+
+    const response = await fetch("/api/admin/programs", {
+      method: "POST",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal menambah program.");
+    await fetchItems();
+  };
+
+  const updateProgram = async (id: number, values: ProgramFormData, file: File | null) => {
+    const formData = new FormData();
+    formData.append("id", String(id));
+    formData.append("kategori", values.kategori);
+    formData.append("title", values.title);
+    formData.append("isActive", String(values.isActive));
+
+    // Kirim existing URL jika tidak mengganti gambar
+    if (file) {
+      formData.append("image", file);
+    } else if (values.imageUrl) {
+      formData.append("existingImageUrl", values.imageUrl);
+    }
+
+    const response = await fetch("/api/admin/programs", {
+      method: "PUT",
+      body: formData,
+    });
+    const result = (await response.json()) as { error?: string };
+    if (!response.ok) throw new Error(result.error || "Gagal mengubah program.");
+    await fetchItems();
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -163,8 +260,9 @@ export default function ManageProgramsPage() {
       return;
     }
 
-    if (!form.imageUrl.trim() || !isValidImageUrl(form.imageUrl)) {
-      setError("URL Gambar wajib diisi dan valid.");
+    // Validasi: saat create harus ada file, saat edit boleh pakai existing
+    if (!editTarget && !imageFile) {
+      setError("Gambar program wajib diupload.");
       return;
     }
 
@@ -173,39 +271,18 @@ export default function ManageProgramsPage() {
     setSuccess("");
 
     try {
-      const payload = {
-        title: form.title.trim(),
-        kategori: form.kategori,
-        imageUrl: form.imageUrl.trim(),
-        isActive: form.isActive,
-      };
-
       if (editTarget) {
-        // UPDATE
-        const response = await fetch("/api/admin/programs", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editTarget.id, ...payload }),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Gagal mengubah program.");
+        await updateProgram(editTarget.id, form, imageFile);
         showSuccess("Foto program berhasil diperbarui.");
       } else {
-        // INSERT
-        const response = await fetch("/api/admin/programs", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const result = (await response.json()) as { error?: string };
-        if (!response.ok) throw new Error(result.error || "Gagal menambah program.");
+        await insertProgram(form, imageFile);
         showSuccess("Foto program berhasil ditambahkan.");
       }
 
       setModalOpen(false);
       setEditTarget(null);
       setForm(EMPTY_FORM);
-      await fetchItems();
+      resetImageState();
     } catch (saveError) {
       setError(getErrorMessage(saveError, "Gagal menyimpan data."));
     } finally {
@@ -292,7 +369,7 @@ export default function ManageProgramsPage() {
           <div>
             <h2 className="font-bold text-slate-800">Manajemen Foto Program</h2>
             <p className="text-xs text-slate-400">
-              Kelola foto kegiatan dengan kategori, URL gambar, dan status
+              Kelola foto kegiatan dengan kategori, upload gambar, dan status
               aktif.
             </p>
           </div>
@@ -308,7 +385,6 @@ export default function ManageProgramsPage() {
                 <th className="px-6 py-3">Foto</th>
                 <th className="px-6 py-3">Label</th>
                 <th className="px-6 py-3">Kategori</th>
-                <th className="px-6 py-3">URL</th>
                 <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3 text-right">Aksi</th>
               </tr>
@@ -317,20 +393,20 @@ export default function ManageProgramsPage() {
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="py-12 text-center text-sm text-slate-400"
                   >
                     <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" />
-                    Memuat data program dan partner...
+                    Memuat data program...
                   </td>
                 </tr>
               ) : filteredItems.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="py-12 text-center text-sm text-slate-400"
                   >
-                    Memuat data program...
+                    Tidak ada data program ditemukan.
                   </td>
                 </tr>
               ) : (
@@ -344,14 +420,17 @@ export default function ManageProgramsPage() {
                     >
                       <td className="max-w-sm px-6 py-4">
                         <div className="flex h-10 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                          {item.imageUrl && isValidImageUrl(item.imageUrl) ? (
-                            <img
+                          {item.imageUrl ? (
+                            <Image
                               src={item.imageUrl}
                               alt={item.title}
+                              width={64}
+                              height={40}
                               className="h-full w-full object-cover"
+                              unoptimized
                             />
                           ) : (
-                            <ImageIcon size={18} className="text-slate-400" />
+                            <ImagePlus size={18} className="text-slate-400" />
                           )}
                         </div>
                       </td>
@@ -366,11 +445,6 @@ export default function ManageProgramsPage() {
                         >
                           {category.label}
                         </span>
-                      </td>
-                      <td className="max-w-md px-6 py-4">
-                        <p className="truncate text-xs text-slate-500">
-                          {item.imageUrl || "-"}
-                        </p>
                       </td>
                       <td className="px-6 py-4">
                         <span
@@ -505,33 +579,69 @@ export default function ManageProgramsPage() {
                 />
               </div>
 
+              {/* ====== IMAGE UPLOAD SECTION ====== */}
               <div className="md:col-span-2">
                 <label className="mb-1.5 block text-xs font-semibold text-slate-600">
-                  URL Gambar *
+                  Gambar Program {!editTarget && "*"}
                 </label>
-                <input
-                  type="url"
-                  value={form.imageUrl}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      imageUrl: event.target.value,
-                    }))
-                  }
-                  required
-                  placeholder="https://..."
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
-                />
-                {form.imageUrl && isValidImageUrl(form.imageUrl) && (
-                  <div className="mt-2 flex justify-center rounded-xl bg-slate-50 p-3">
-                    <img
-                      src={form.imageUrl}
-                      alt="Preview"
-                      className="max-h-40 max-w-full rounded-lg object-cover"
-                    />
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="relative mb-3 group">
+                    <div className="relative h-44 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                      <Image
+                        src={imagePreview}
+                        alt="Preview gambar"
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        resetImageState();
+                        // Juga hapus imageUrl dari form (untuk mode edit)
+                        setForm((f) => ({ ...f, imageUrl: "" }));
+                      }}
+                      className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition-all hover:bg-red-600 hover:scale-110"
+                      title="Hapus gambar"
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
                 )}
+
+                {/* File Input Area */}
+                <div
+                  className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center transition-all hover:border-[#CB2229]/40 hover:bg-red-50/30"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept={ACCEPTED_IMAGE_TYPES}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CB2229]/10">
+                      <ImagePlus size={20} className="text-[#CB2229]" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">
+                        {imagePreview
+                          ? "Klik untuk ganti gambar"
+                          : "Klik untuk upload gambar"}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-400">
+                        PNG, JPEG, WebP • Maks {MAX_FILE_SIZE_MB}MB
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+              {/* ====== END IMAGE UPLOAD SECTION ====== */}
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
@@ -548,7 +658,11 @@ export default function ManageProgramsPage() {
                 className="flex items-center gap-2 rounded-xl bg-[#CB2229] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-70"
               >
                 {isSaving && <Loader2 size={15} className="animate-spin" />}
-                {editTarget ? "Simpan Perubahan" : "Tambah"}
+                {isSaving
+                  ? "Menyimpan..."
+                  : editTarget
+                    ? "Simpan Perubahan"
+                    : "Tambah"}
               </button>
             </div>
           </form>

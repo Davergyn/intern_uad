@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { partnerships } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
+import { supabase } from "@/lib/supabaseClient";
+
+// Helper: Upload file ke Supabase Storage dan return public URL
+async function uploadLogo(file: File): Promise<string> {
+  const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+  const filePath = `partnerships/${uniqueFileName}`;
+
+  const { data, error } = await supabase.storage
+    .from("academy-events")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (error) {
+    throw new Error(`Gagal upload logo: ${error.message}`);
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("academy-events")
+    .getPublicUrl(data.path);
+
+  return publicUrlData.publicUrl;
+}
 
 export async function GET() {
   try {
@@ -18,18 +42,27 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const formData = await request.formData();
+    const name = (formData.get("name") as string)?.trim();
 
-    if (!body.name?.trim()) {
+    if (!name) {
       return NextResponse.json(
         { error: "Nama partner wajib diisi." },
         { status: 400 },
       );
     }
 
-    if (!body.logoUrl?.trim()) {
+    // Handle logo upload
+    let logoUrl: string | null = null;
+    const logoFile = formData.get("logo") as File | null;
+
+    if (logoFile && logoFile.size > 0) {
+      logoUrl = await uploadLogo(logoFile);
+    }
+
+    if (!logoUrl) {
       return NextResponse.json(
-        { error: "URL Logo wajib diisi." },
+        { error: "Logo partner wajib diupload." },
         { status: 400 },
       );
     }
@@ -37,16 +70,18 @@ export async function POST(request: NextRequest) {
     const [inserted] = await db
       .insert(partnerships)
       .values({
-        name: body.name.trim(),
-        logoUrl: body.logoUrl.trim(),
+        name,
+        logoUrl,
       })
       .returning();
 
     return NextResponse.json({ data: inserted }, { status: 201 });
   } catch (error) {
     console.error("POST /api/admin/partnerships error:", error);
+    const message =
+      error instanceof Error ? error.message : "Gagal menambah partnership.";
     return NextResponse.json(
-      { error: "Gagal menambah partnership." },
+      { error: message },
       { status: 500 },
     );
   }
@@ -54,23 +89,38 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { id, ...values } = body;
+    const formData = await request.formData();
+    const id = Number(formData.get("id"));
 
     if (!id) {
       return NextResponse.json({ error: "ID wajib diisi." }, { status: 400 });
     }
 
-    if (!values.name?.trim()) {
+    const name = (formData.get("name") as string)?.trim();
+
+    if (!name) {
       return NextResponse.json(
         { error: "Nama partner wajib diisi." },
         { status: 400 },
       );
     }
 
-    if (!values.logoUrl?.trim()) {
+    // Handle logo upload
+    let logoUrl: string | null = null;
+    const logoFile = formData.get("logo") as File | null;
+    const existingLogoUrl = formData.get("existingLogoUrl") as string | null;
+
+    if (logoFile && logoFile.size > 0) {
+      // Upload file baru
+      logoUrl = await uploadLogo(logoFile);
+    } else if (existingLogoUrl) {
+      // Pakai URL yang sudah ada (tidak ganti logo)
+      logoUrl = existingLogoUrl;
+    }
+
+    if (!logoUrl) {
       return NextResponse.json(
-        { error: "URL Logo wajib diisi." },
+        { error: "Logo partner wajib diupload." },
         { status: 400 },
       );
     }
@@ -78,8 +128,8 @@ export async function PUT(request: NextRequest) {
     const [updated] = await db
       .update(partnerships)
       .set({
-        name: values.name.trim(),
-        logoUrl: values.logoUrl.trim(),
+        name,
+        logoUrl,
         updatedAt: new Date(),
       })
       .where(eq(partnerships.id, id))
@@ -88,8 +138,10 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ data: updated });
   } catch (error) {
     console.error("PUT /api/admin/partnerships error:", error);
+    const message =
+      error instanceof Error ? error.message : "Gagal mengubah partnership.";
     return NextResponse.json(
-      { error: "Gagal mengubah partnership." },
+      { error: message },
       { status: 500 },
     );
   }
