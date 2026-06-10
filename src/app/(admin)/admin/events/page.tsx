@@ -13,6 +13,8 @@ import {
   Search,
   Trash2,
   X,
+  MapPin,
+  Ticket
 } from "lucide-react";
 import type {
   DeliveryMode,
@@ -30,10 +32,10 @@ const TYPE_OPTIONS: EventType[] = [
 const DELIVERY_OPTIONS: DeliveryMode[] = ["online", "face_to_face", "hybrid"];
 
 const TYPE_COLOR: Record<EventType, string> = {
-  webinar: "bg-blue-50 text-blue-600",
-  workshop: "bg-amber-50 text-amber-600",
-  seminar: "bg-purple-50 text-purple-600",
-  training: "bg-green-50 text-green-600",
+  webinar: "bg-blue-50 text-blue-600 border-blue-200",
+  workshop: "bg-amber-50 text-amber-600 border-amber-200",
+  seminar: "bg-purple-50 text-purple-600 border-purple-200",
+  training: "bg-emerald-50 text-emerald-600 border-emerald-200",
 };
 
 const TYPE_LABEL: Record<EventType, string> = {
@@ -48,6 +50,13 @@ const DELIVERY_LABEL: Record<DeliveryMode, string> = {
   face_to_face: "Face to Face",
   hybrid: "Hybrid",
 };
+
+const EVENT_GRADIENTS = [
+  "from-blue-500 to-indigo-600",
+  "from-emerald-500 to-teal-600",
+  "from-amber-500 to-orange-600",
+  "from-purple-500 to-fuchsia-600",
+];
 
 const EMPTY_FORM: EventFormValues = {
   title: "",
@@ -69,7 +78,9 @@ const MAX_FILE_SIZE_MB = 5;
 function formatDate(date: string) {
   if (!date) return "-";
 
-  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date) ? new Date(`${date}T00:00:00`) : new Date(date);
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(date)
+    ? new Date(`${date}T00:00:00`)
+    : new Date(date);
 
   if (Number.isNaN(parsedDate.getTime())) {
     return "-";
@@ -81,7 +92,6 @@ function formatDate(date: string) {
     year: "numeric",
   }).format(parsedDate);
 }
-
 
 function formatPrice(price: string | null) {
   if (!price || price === "0") return "Gratis";
@@ -113,20 +123,17 @@ function getEventStatus(eventDate: string | null | undefined): {
   try {
     // Get today's date dalam format YYYY-MM-DD
     const today = new Date().toISOString().split("T")[0];
-    const eventDateOnly = String(eventDate).split("T")[0]; // Extract YYYY-MM-DD
+    const eventDateOnly = String(eventDate).split("T")[0];
 
-    // Bandingkan tanggal
     if (eventDateOnly < today) {
-      // Past event
       return {
         status: "Past",
-        bgColor: "bg-emerald-50",
-        textColor: "text-emerald-600",
-        borderColor: "border-emerald-200/60",
+        bgColor: "bg-slate-50",
+        textColor: "text-slate-500",
+        borderColor: "border-slate-200",
         icon: "check",
       };
     } else {
-      // Upcoming event (termasuk hari ini)
       return {
         status: "Upcoming",
         bgColor: "bg-amber-50",
@@ -156,6 +163,9 @@ export default function ManageEventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  
+  // State untuk toggle Grid/Table
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   // State untuk file upload & preview
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
@@ -218,7 +228,11 @@ export default function ManageEventsPage() {
     await fetchEvents();
   };
 
-  const updateEvent = async (id: number, values: EventFormValues, file: File | null) => {
+  const updateEvent = async (
+    id: number,
+    values: EventFormValues,
+    file: File | null,
+  ) => {
     const formData = new FormData();
     formData.append("id", String(id));
     formData.append("title", values.title);
@@ -232,7 +246,6 @@ export default function ManageEventsPage() {
     formData.append("price", values.price ?? "0");
     formData.append("isPublished", String(values.isPublished));
 
-    // Kirim existing URL jika tidak mengganti gambar
     if (file) {
       formData.append("thumbnail", file);
     } else if (values.thumbnailUrl) {
@@ -262,7 +275,6 @@ export default function ManageEventsPage() {
     void fetchEvents();
   }, []);
 
-  // Cleanup object URL saat komponen unmount atau preview berubah
   useEffect(() => {
     return () => {
       if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
@@ -286,14 +298,14 @@ export default function ManageEventsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validasi ukuran file
     if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setError(`Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`);
+      setError(
+        `Ukuran file melebihi ${MAX_FILE_SIZE_MB}MB. Silakan pilih file yang lebih kecil.`,
+      );
       e.target.value = "";
       return;
     }
 
-    // Validasi tipe file
     const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/jpg"];
     if (!allowedTypes.includes(file.type)) {
       setError("Format file tidak didukung. Gunakan PNG, JPEG, atau WebP.");
@@ -303,7 +315,6 @@ export default function ManageEventsPage() {
 
     setError("");
 
-    // Revoke URL lama sebelum buat yang baru
     if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
       URL.revokeObjectURL(thumbnailPreview);
     }
@@ -334,7 +345,6 @@ export default function ManageEventsPage() {
       thumbnailUrl: row.thumbnailUrl ?? "",
       isPublished: row.isPublished ?? true,
     });
-    // Reset file state, tapi set preview ke existing thumbnail
     setThumbnailFile(null);
     setThumbnailPreview(row.thumbnailUrl ?? null);
     if (fileInputRef.current) {
@@ -362,9 +372,7 @@ export default function ManageEventsPage() {
       resetThumbnailState();
     } catch (saveError) {
       setError(
-        saveError instanceof Error
-          ? saveError.message
-          : "Gagal menyimpan event.",
+        saveError instanceof Error ? saveError.message : "Gagal menyimpan event.",
       );
     } finally {
       setIsSaving(false);
@@ -381,9 +389,7 @@ export default function ManageEventsPage() {
       setDeleteTarget(null);
     } catch (deleteError) {
       setError(
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Gagal menghapus event.",
+        deleteError instanceof Error ? deleteError.message : "Gagal menghapus event.",
       );
     } finally {
       setIsSaving(false);
@@ -392,6 +398,7 @@ export default function ManageEventsPage() {
 
   return (
     <div className="space-y-5">
+      {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search
@@ -405,12 +412,26 @@ export default function ManageEventsPage() {
             className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-4 text-sm focus:border-[#CB2229] focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30"
           />
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center justify-center gap-2 rounded-xl bg-[#CB2229] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
-        >
-          <Plus size={16} /> Tambah Event
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Toggle Grid/Table */}
+          <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden">
+            {(["grid", "table"] as const).map((m) => (
+              <button
+                key={m}
+                onClick={() => setViewMode(m)}
+                className={`px-3 py-2 text-xs font-medium transition-colors ${viewMode === m ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-50"}`}
+              >
+                {m === "grid" ? "Grid" : "Tabel"}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={openCreate}
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#CB2229] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-700"
+          >
+            <Plus size={16} /> Tambah Event
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -419,133 +440,251 @@ export default function ManageEventsPage() {
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-          <div>
-            <h2 className="font-bold text-slate-800">Daftar Events</h2>
-            <p className="text-xs text-slate-400">
-              Data tersinkron langsung dengan tabel public.events.
-            </p>
-          </div>
-          <span className="text-xs text-slate-400">{filtered.length} data</span>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                <th className="px-6 py-3">Event</th>
-                <th className="px-6 py-3">Tipe</th>
-                <th className="px-6 py-3">Tanggal</th>
-                <th className="px-6 py-3">Kuota</th>
-                <th className="px-6 py-3">Harga</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Masa</th>
-                <th className="px-6 py-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="py-12 text-center text-sm text-slate-400"
+      {/* View Mode: GRID */}
+      {viewMode === "grid" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {isLoading ? (
+            <div className="col-span-full py-16 flex items-center justify-center text-slate-400">
+              <Loader2 size={20} className="animate-spin mr-2" />
+              Memuat data event...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="col-span-full py-16 text-center text-slate-400 text-sm bg-white rounded-2xl border border-slate-100">
+              {search
+                ? "Tidak ada event yang cocok dengan pencarian."
+                : 'Belum ada data event. Klik "+ Tambah Event" untuk menambahkan.'}
+            </div>
+          ) : (
+            filtered.map((row) => {
+              const eventStatus = getEventStatus(row.eventDate);
+              
+              return (
+                <div
+                  key={`event-${row.id}`}
+                  className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-all duration-200 group"
+                >
+                  {/* Thumbnail Area */}
+                  <div
+                    className={`h-40 relative flex items-center justify-center bg-linear-to-br ${EVENT_GRADIENTS[row.id % EVENT_GRADIENTS.length]}`}
                   >
-                    <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" />
-                    Memuat data event...
-                  </td>
-                </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="py-12 text-center text-sm text-slate-400"
-                  >
-                    Tidak ada data event ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                filtered.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="transition-colors hover:bg-slate-50"
-                  >
-                    <td className="max-w-sm px-6 py-4">
-                      <p className="truncate text-sm font-semibold text-slate-800">
-                        {row.title}
-                      </p>
-                      <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
-                        <Clock size={12} />
-                        {row.startTime?.slice(0, 5) || "--:--"} -{" "}
-                        {row.endTime?.slice(0, 5) || "--:--"} |{" "}
-                        {DELIVERY_LABEL[row.deliveryMode]}
-                      </p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TYPE_COLOR[row.eventType]}`}
-                      >
+                    {row.thumbnailUrl ? (
+                      <Image
+                        src={row.thumbnailUrl}
+                        alt={row.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        unoptimized
+                      />
+                    ) : (
+                      <CalendarDays size={40} className="text-white/40" />
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
+                    
+                    {/* Top Badges */}
+                    <div className="absolute top-3 left-3">
+                      <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border backdrop-blur-md shadow-sm ${TYPE_COLOR[row.eventType]}`}>
                         {TYPE_LABEL[row.eventType]}
                       </span>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
-                      {formatDate(row.eventDate)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">
-                      {row.quota ?? 0}
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-600">
-                      {formatPrice(row.price)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`rounded-full px-2.5 py-1 text-xs font-semibold ${row.isPublished ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
-                      >
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <span className={`px-2 py-1 text-[10px] font-bold rounded-md backdrop-blur-md shadow-sm ${row.isPublished ? "bg-emerald-500 text-white" : "bg-slate-800 text-white"}`}>
                         {row.isPublished ? "Published" : "Draft"}
                       </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {(() => {
-                        const eventStatus = getEventStatus(row.eventDate);
-                        return (
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold w-fit border ${eventStatus.bgColor} ${eventStatus.textColor} ${eventStatus.borderColor}`}
-                          >
-                            {eventStatus.icon === "check" ? (
-                              <CheckCircle2 size={13} />
-                            ) : (
-                              <Clock size={13} />
-                            )}
-                            {eventStatus.status}
-                          </span>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => openEdit(row)}
-                          aria-label={`Edit ${row.title}`}
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                        >
-                          <Pencil size={15} />
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(row)}
-                          aria-label={`Hapus ${row.title}`}
-                          className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                    </div>
+
+                    {/* Bottom Status Badge (Inside Image) */}
+                    <div className="absolute bottom-3 left-3">
+                       <span className={`flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border shadow-sm ${eventStatus.bgColor} ${eventStatus.textColor} ${eventStatus.borderColor}`}>
+                          {eventStatus.icon === "check" ? <CheckCircle2 size={12} /> : <Clock size={12} />}
+                          {eventStatus.status}
+                       </span>
+                    </div>
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    <h3 className="font-bold text-slate-800 text-[15px] leading-snug line-clamp-2 mb-4 group-hover:text-[#CB2229] transition-colors">
+                      {row.title}
+                    </h3>
+                    
+                    <div className="space-y-2.5 mt-auto">
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <CalendarDays size={14} className="text-slate-400 shrink-0" />
+                        <span className="font-medium text-slate-600">{formatDate(row.eventDate)}</span>
                       </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <Clock size={14} className="text-slate-400 shrink-0" />
+                        <span>{row.startTime?.slice(0, 5) || "--:--"} - {row.endTime?.slice(0, 5) || "--:--"} WIB</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <MapPin size={14} className="text-slate-400 shrink-0" />
+                        <span>{DELIVERY_LABEL[row.deliveryMode]} • {row.quota ? `${row.quota} Kuota` : 'Tanpa Batas'}</span>
+                      </div>
+                      
+                      <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-[#CB2229] font-bold text-sm">
+                          <Ticket size={16} />
+                          {formatPrice(row.price)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/50">
+                    <button
+                      onClick={() => openEdit(row)}
+                      aria-label={`Edit ${row.title}`}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                    >
+                      <Pencil size={13} /> Edit
+                    </button>
+                    <button
+                      onClick={() => setDeleteTarget(row)}
+                      aria-label={`Hapus ${row.title}`}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={13} /> Hapus
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* View Mode: TABLE */}
+      {viewMode === "table" && (
+        <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div>
+              <h2 className="font-bold text-slate-800">Daftar Events</h2>
+              <p className="text-xs text-slate-400">
+                Data tersinkron langsung dengan tabel public.events.
+              </p>
+            </div>
+            <span className="text-xs text-slate-400">{filtered.length} data</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                  <th className="px-6 py-3">Event</th>
+                  <th className="px-6 py-3">Tipe</th>
+                  <th className="px-6 py-3">Tanggal</th>
+                  <th className="px-6 py-3">Kuota</th>
+                  <th className="px-6 py-3">Harga</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Masa</th>
+                  <th className="px-6 py-3 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="py-12 text-center text-sm text-slate-400"
+                    >
+                      <Loader2 className="mx-auto mb-2 h-5 w-5 animate-spin" />
+                      Memuat data event...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="py-12 text-center text-sm text-slate-400"
+                    >
+                      Tidak ada data event ditemukan.
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((row) => (
+                    <tr
+                      key={row.id}
+                      className="transition-colors hover:bg-slate-50"
+                    >
+                      <td className="max-w-sm px-6 py-4">
+                        <p className="truncate text-sm font-semibold text-slate-800">
+                          {row.title}
+                        </p>
+                        <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+                          <Clock size={12} />
+                          {row.startTime?.slice(0, 5) || "--:--"} -{" "}
+                          {row.endTime?.slice(0, 5) || "--:--"} |{" "}
+                          {DELIVERY_LABEL[row.deliveryMode]}
+                        </p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${TYPE_COLOR[row.eventType]}`}
+                        >
+                          {TYPE_LABEL[row.eventType]}
+                        </span>
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm text-slate-500">
+                        {formatDate(row.eventDate)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-500">
+                        {row.quota ?? 0}
+                      </td>
+                      <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-slate-600">
+                        {formatPrice(row.price)}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold border ${row.isPublished ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}
+                        >
+                          {row.isPublished ? "Published" : "Draft"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {(() => {
+                          const eventStatus = getEventStatus(row.eventDate);
+                          return (
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold w-fit border ${eventStatus.bgColor} ${eventStatus.textColor} ${eventStatus.borderColor}`}
+                            >
+                              {eventStatus.icon === "check" ? (
+                                <CheckCircle2 size={13} />
+                              ) : (
+                                <Clock size={13} />
+                              )}
+                              {eventStatus.status}
+                            </span>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => openEdit(row)}
+                            aria-label={`Edit ${row.title}`}
+                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            onClick={() => setDeleteTarget(row)}
+                            aria-label={`Hapus ${row.title}`}
+                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
+      {/* CREATE/EDIT MODAL */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -730,7 +869,6 @@ export default function ManageEventsPage() {
                   Thumbnail Gambar
                 </label>
 
-                {/* Image Preview */}
                 {thumbnailPreview && (
                   <div className="relative mb-3 group">
                     <div className="relative h-44 w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
@@ -746,7 +884,6 @@ export default function ManageEventsPage() {
                       type="button"
                       onClick={() => {
                         resetThumbnailState();
-                        // Juga hapus thumbnailUrl dari form (untuk mode edit)
                         setForm((f) => ({ ...f, thumbnailUrl: "" }));
                       }}
                       className="absolute -right-2 -top-2 flex h-7 w-7 items-center justify-center rounded-full bg-red-500 text-white shadow-md transition-all hover:bg-red-600 hover:scale-110"
@@ -757,7 +894,6 @@ export default function ManageEventsPage() {
                   </div>
                 )}
 
-                {/* File Input Area */}
                 <div
                   className="relative cursor-pointer rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 px-4 py-6 text-center transition-all hover:border-[#CB2229]/40 hover:bg-red-50/30"
                   onClick={() => fileInputRef.current?.click()}
@@ -828,6 +964,7 @@ export default function ManageEventsPage() {
         </div>
       )}
 
+      {/* DELETE MODAL */}
       {deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button

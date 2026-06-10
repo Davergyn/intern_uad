@@ -7,7 +7,11 @@
 // ============================================================================
 export type EventType = "webinar" | "workshop" | "seminar" | "training";
 export type DeliveryMode = "online" | "face_to_face" | "hybrid";
-export type ProgramKategori = "training-of-trainer" | "seminar" | "workshop" | "partnership";
+export type ProgramKategori =
+  | "training-of-trainer"
+  | "seminar"
+  | "workshop"
+  | "partnership";
 export type RegistrationStatus = "registered" | "attended" | "cancelled";
 export type AdminLevel = "super_admin" | "admin";
 
@@ -47,11 +51,11 @@ export type EventFormValues = {
   isPublished: boolean;
 };
 
-
 export type MaterialRow = {
   id: number;
   title: string;
   description: string | null;
+  materialType: string | null; // 'url' atau 'pdf'
   linkUrl: string | null;
   coverUrl: string | null;
   isActive: boolean | null;

@@ -207,7 +207,7 @@ export default function AdminOverviewPage() {
       {/* Welcome Banner */}
       <div className="bg-linear-to-r from-slate-800 to-slate-700 rounded-2xl p-6 text-white flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold">Selamat Datang, Admin! ðŸ‘‹</h2>
+          <h2 className="text-xl font-bold">Selamat Datang, Admin!</h2>
           <p className="text-slate-300 text-sm mt-1">
             Kelola konten .id Academy dari panel ini.
           </p>

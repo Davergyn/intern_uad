@@ -11,6 +11,7 @@ import {
   time,
   pgEnum,
   unique,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 // ============================================================================
@@ -99,9 +100,11 @@ export const materials = pgTable("materials", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
+  materialType: varchar("material_type", { length: 20 }).default("url"), // 'url' atau 'pdf'
   linkUrl: varchar("link_url", { length: 500 }),
   coverUrl: varchar("cover_url", { length: 500 }),
   isActive: boolean("is_active").default(true),
+  attachments: jsonb("attachments").default([]), // Untuk Input Banyak File 
   createdBy: integer("created_by").references(() => admins.id, {
     onDelete: "set null",
   }),
