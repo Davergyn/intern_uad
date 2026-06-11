@@ -113,6 +113,20 @@ export const materials = pgTable("materials", {
 });
 
 // ============================================================================
+// TABEL: MATERIAL LINKS (Relasi One-to-Many dari materials)
+// ============================================================================
+export const materialLinks = pgTable("material_links", {
+  id: serial("id").primaryKey(),
+  materialId: integer("material_id")
+    .notNull()
+    .references(() => materials.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 10 }).notNull().$type<"url" | "pdf">(),
+  name: varchar("name", { length: 255 }).notNull(),
+  url: varchar("url", { length: 1000 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// ============================================================================
 // TABEL: TRAINERS
 // ============================================================================
 export const trainers = pgTable("trainers", {
@@ -277,6 +291,9 @@ export type NewEvent = typeof events.$inferInsert;
 
 export type Material = typeof materials.$inferSelect;
 export type NewMaterial = typeof materials.$inferInsert;
+
+export type MaterialLink = typeof materialLinks.$inferSelect;
+export type NewMaterialLink = typeof materialLinks.$inferInsert;
 
 export type Trainer = typeof trainers.$inferSelect;
 export type NewTrainer = typeof trainers.$inferInsert;
