@@ -1,9 +1,15 @@
+// Paksa layout ini (dan semua halaman di bawahnya) menjadi dinamis agar
+// Next.js tidak mencoba men-render secara statis saat build. Layout ini
+// membaca cookies via createSupabaseServerClient(), yang membutuhkan runtime.
+export const dynamic = "force-dynamic";
+
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
 
 /**
  * Layout untuk semua halaman publik (Landing Group).

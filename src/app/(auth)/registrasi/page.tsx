@@ -1,5 +1,9 @@
+// Paksa halaman ini menjadi dinamis agar HeroSection tidak query DB saat build.
+export const dynamic = "force-dynamic";
+
 import HeroSection from "../hero_section";
 import RegisterForm from "./_components/register-form";
+
 
 export default function RegisterPage() {
   return (
