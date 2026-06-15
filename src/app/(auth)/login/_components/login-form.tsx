@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
 import { loginUser, loginAdmin } from "@/lib/actions/auth";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -66,6 +66,7 @@ export default function LoginForm() {
     setGoogleLoading(true);
     setError("");
 
+    const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

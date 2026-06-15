@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { partnerships } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
+
+// Paksa route menjadi dinamis agar Next.js tidak mencoba men-generate
+// halaman ini secara statis saat build (env vars belum tersedia di build time).
+export const dynamic = "force-dynamic";
 
 type PartnershipKategori = "instansi" | "registrar" | "akademisi" | "komunitas";
 
 // Helper: Upload file ke Supabase Storage dan return public URL
 async function uploadLogo(file: File): Promise<string> {
+  const supabase = getSupabaseClient();
   const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
   const filePath = `partnerships/${uniqueFileName}`;
 

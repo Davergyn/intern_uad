@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { materials, materialLinks } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 // Paksa route menjadi dinamis — mencegah Next.js men-cache respons GET
 // sehingga setiap request selalu menarik data segar dari PostgreSQL.
@@ -33,6 +33,7 @@ async function uploadFile(
   file: File,
   fileType: "cover" | "document",
 ): Promise<string> {
+  const supabase = getSupabaseClient();
   const safeName = file.name.replace(/\s+/g, "-");
   const uniqueFileName = `${Date.now()}-${safeName}`;
   const folderPath =
@@ -469,6 +470,7 @@ export async function PUT(request: NextRequest) {
           pathsToDelete,
         );
 
+        const supabase = getSupabaseClient();
         const { data: storageData, error: storageError } =
           await supabase.storage.from("academy-events").remove(pathsToDelete);
 
@@ -627,6 +629,7 @@ export async function DELETE(request: NextRequest) {
         filesToDelete,
       );
 
+      const supabase = getSupabaseClient();
       const { data: storageData, error: storageError } =
         await supabase.storage.from("academy-events").remove(filesToDelete);
 

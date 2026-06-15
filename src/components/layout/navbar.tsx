@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/authContext";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 // ─────────────────────────────────────────────
 //  PROPS
@@ -318,6 +318,7 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
 
   const handleLogout = async () => {
     // 1. Sign out dari Supabase (hapus cookies)
+    const supabase = getSupabaseClient();
     await supabase.auth.signOut();
     // 2. Sign out dari legacy authContext (hapus localStorage)
     logout();

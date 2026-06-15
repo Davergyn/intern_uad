@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { events, eventTrainers, trainers } from "@/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
-import { supabase } from "@/lib/supabaseClient";
+import { getSupabaseClient } from "@/lib/supabaseClient";
 
 // Paksa route menjadi dinamis — mencegah Next.js men-cache respons GET
 export const dynamic = "force-dynamic";
@@ -24,6 +24,7 @@ type TrainerMini = {
 
 /** Upload thumbnail ke Supabase Storage, kembalikan public URL. */
 async function uploadThumbnail(file: File): Promise<string> {
+  const supabase = getSupabaseClient();
   const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
   const filePath = `events/${uniqueFileName}`;
 

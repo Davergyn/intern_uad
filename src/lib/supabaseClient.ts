@@ -4,10 +4,12 @@
 // dapat membaca verifier saat menukar authorization code menjadi session.
 import { createBrowserClient } from "@supabase/ssr";
 
-// Mengambil URL dan Key dari .env.local
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+// Mengekspor factory function sehingga client hanya dibuat saat dipanggil
+// (bukan saat modul di-import), agar env vars tersedia di runtime.
+export function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
+  return createBrowserClient(supabaseUrl, supabaseKey);
+}
 
-// Mengekspor instance supabase browser client
-// createBrowserClient secara otomatis menyimpan auth state di cookies
-export const supabase = createBrowserClient(supabaseUrl, supabaseKey);
+
