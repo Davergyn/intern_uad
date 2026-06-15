@@ -18,14 +18,14 @@ import type { TrainerRow } from "@/types/database";
 
 type TrainerFormData = {
   name: string;
-  roleTitle: string;
+  deskripsi: string;
   photoUrl: string;
   isActive: boolean;
 };
 
 const EMPTY_FORM: TrainerFormData = {
   name: "",
-  roleTitle: "",
+  deskripsi: "",
   photoUrl: "",
   isActive: true,
 };
@@ -110,7 +110,7 @@ export default function ManageTrainersPage() {
       (trainer) =>
         !keyword ||
         trainer.name.toLowerCase().includes(keyword) ||
-        (trainer.roleTitle ?? "").toLowerCase().includes(keyword),
+        (trainer.deskripsi ?? "").toLowerCase().includes(keyword),
     );
   }, [trainers, search]);
 
@@ -213,7 +213,7 @@ export default function ManageTrainersPage() {
     setEditTarget(trainer);
     setForm({
       name: trainer.name,
-      roleTitle: trainer.roleTitle ?? "",
+      deskripsi: trainer.deskripsi ?? "",
       photoUrl: trainer.photoUrl ?? "",
       isActive: trainer.isActive ?? true,
     });
@@ -229,7 +229,7 @@ export default function ManageTrainersPage() {
   const insertTrainer = async (values: TrainerFormData, file: File | null) => {
     const formData = new FormData();
     formData.append("name", values.name);
-    formData.append("roleTitle", values.roleTitle ?? "");
+    formData.append("deskripsi", values.deskripsi ?? "");
     formData.append("isActive", String(values.isActive));
 
     if (file) {
@@ -249,7 +249,7 @@ export default function ManageTrainersPage() {
     const formData = new FormData();
     formData.append("id", String(id));
     formData.append("name", values.name);
-    formData.append("roleTitle", values.roleTitle ?? "");
+    formData.append("deskripsi", values.deskripsi ?? "");
     formData.append("isActive", String(values.isActive));
 
     // Kirim existing URL jika tidak mengganti foto
@@ -390,9 +390,11 @@ export default function ManageTrainersPage() {
                 <h3 className="font-bold text-slate-800 text-sm leading-snug">
                   {trainer.name}
                 </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {trainer.roleTitle || "—"}
-                </p>
+                {trainer.deskripsi && (
+                  <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+                    {trainer.deskripsi}
+                  </p>
+                )}
               </div>
 
               {/* Status Badge */}
@@ -483,18 +485,19 @@ export default function ManageTrainersPage() {
                 />
               </div>
 
-              {/* Jabatan / Role */}
+              {/* Deskripsi */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1.5">
-                  Jabatan / Role
+                  Deskripsi
                 </label>
-                <input
-                  value={form.roleTitle}
+                <textarea
+                  value={form.deskripsi}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, roleTitle: e.target.value }))
+                    setForm((prev) => ({ ...prev, deskripsi: e.target.value }))
                   }
-                  placeholder="Contoh: Senior Trainer .id Academy"
-                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229]"
+                  placeholder="Contoh: Trainer berpengalaman di bidang keamanan siber dan literasi digital..."
+                  rows={3}
+                  className="w-full px-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CB2229]/30 focus:border-[#CB2229] resize-none"
                 />
               </div>
 

@@ -32,6 +32,7 @@ function extractFormFields(formData: FormData) {
   return {
     name: formData.get("name") as string,
     roleTitle: (formData.get("roleTitle") as string) || null,
+    deskripsi: (formData.get("deskripsi") as string) || null,
     isActive: formData.get("isActive") === "true",
   };
 }
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
       .values({
         name: fields.name,
         roleTitle: fields.roleTitle,
+        deskripsi: fields.deskripsi,
         photoUrl,
         isActive: fields.isActive,
       })
@@ -113,6 +115,7 @@ export async function PUT(request: NextRequest) {
       .set({
         name: fields.name,
         roleTitle: fields.roleTitle,
+        deskripsi: fields.deskripsi,
         photoUrl,
         isActive: fields.isActive,
         updatedAt: new Date(),

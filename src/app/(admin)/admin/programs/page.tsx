@@ -37,11 +37,11 @@ const KATEGORI_OPTIONS: Array<{
   color: string;
   borderColor: string;
 }> = [
-  { value: "training-of-trainer", label: "Training of Trainer", color: "bg-green-50 text-green-700", borderColor: "border-green-200" },
-  { value: "seminar", label: "Seminar", color: "bg-blue-50 text-blue-700", borderColor: "border-blue-200" },
-  { value: "workshop", label: "Workshop", color: "bg-amber-50 text-amber-700", borderColor: "border-amber-200" },
-  { value: "partnership", label: "Partnership", color: "bg-purple-50 text-purple-700", borderColor: "border-purple-200" },
-];
+    { value: "training-of-trainer", label: "Training of Trainer", color: "bg-green-50 text-green-700", borderColor: "border-green-200" },
+    { value: "seminar", label: "Seminar", color: "bg-blue-50 text-blue-700", borderColor: "border-blue-200" },
+    { value: "workshop", label: "Workshop", color: "bg-amber-50 text-amber-700", borderColor: "border-amber-200" },
+    { value: "partnership", label: "Partnership", color: "bg-purple-50 text-purple-700", borderColor: "border-purple-200" },
+  ];
 
 const TABLE_HEADERS = ["Foto", "Label", "Kategori", "Status", "Aksi"];
 

@@ -57,15 +57,21 @@ export default function ClientTrainerSection({ trainers }: { trainers: TrainerDa
               )}
             </div>
 
-            {/* Nama & Role */}
+            {/* Nama & Deskripsi */}
             <div className="flex flex-col justify-between p-5 text-left flex-grow">
               <div>
                 <h2 className="mb-1 line-clamp-2 text-[1.05rem] font-bold leading-tight text-[#CB2229] group-hover:underline">
                   {trainer.name}
                 </h2>
-                <p className="text-xs font-medium text-gray-500">
-                  Trainer Academy Id
-                </p>
+                {trainer.deskripsi ? (
+                  <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                    {trainer.deskripsi}
+                  </p>
+                ) : (
+                  <p className="text-xs font-medium text-gray-400 italic">
+                    Trainer .id Academy
+                  </p>
+                )}
               </div>
             </div>
           </article>

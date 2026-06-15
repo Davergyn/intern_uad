@@ -51,7 +51,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
             </h1>
 
             <p className="mt-6 max-w-xl text-sm leading-7 text-[#374151] sm:text-base">
-             AcademyID merupakan program edukatif dari PANDI (Pengelola Nama
+              AcademyID merupakan program edukatif dari PANDI (Pengelola Nama
               Domain Internet Indonesia) yang bertujuan memberikan pemahaman
               mendalam tentang ekosistem digital Indonesia.
             </p>
@@ -64,22 +64,25 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
             </p>
 
             <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:flex-wrap">
-              <button className="w-full rounded-md bg-[#cf2f2a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-[#b92924] sm:w-auto">
+              <Link
+                href="/login"
+                className="inline-flex w-full items-center justify-center rounded-md bg-[#cf2f2a] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-[#b92924] sm:w-auto"
+              >
                 GET YOUR JOURNEY →
-              </button>
+              </Link>
 
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#d1d5db] text-xs font-bold text-[#111827]">
-                      SS
-                    </div>
-                    <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#9ca3af] text-xs font-bold text-white">
-                      SS
-                    </div>
-                    <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#6b7280] text-xs font-bold text-white">
-                      SS
-                    </div>
+              <div className="flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#d1d5db] text-xs font-bold text-[#111827]">
+                    SS
                   </div>
+                  <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#9ca3af] text-xs font-bold text-white">
+                    SS
+                  </div>
+                  <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-[#6b7280] text-xs font-bold text-white">
+                    SS
+                  </div>
+                </div>
                 <p className="text-sm font-semibold text-[#111827]">
                   {totalRegisteredUsers}+ orang
                   <span className="block text-xs font-normal text-[#4b5563]">
@@ -146,7 +149,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
 
       {/* --- MENGAPA MEMILIH KAMI SECTION (Red Background) --- */}
       <section className="relative overflow-hidden py-20 sm:py-24">
-        
+
         {/* Dekorasi Background */}
         <div className="pointer-events-none absolute left-0 top-0 -ml-32 -mt-32 h-96 w-96 rounded-full border-[40px] border-white/5" />
         <div className="pointer-events-none absolute right-0 bottom-0 -mb-32 -mr-32 h-96 w-96 rounded-full border-[40px] border-white/5" />
@@ -162,7 +165,7 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
           </div>
 
           <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            
+
             {/* Card 1 */}
             <div className="rounded-3xl bg-white p-8 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/20">
               <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-[#CB2229]">

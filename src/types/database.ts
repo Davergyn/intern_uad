@@ -69,7 +69,7 @@ export type TrainerRow = {
   name: string;
   roleTitle: string | null;
   photoUrl: string | null;
-  bio: string | null;
+  deskripsi: string | null;
   isActive: boolean | null;
   createdBy: number | null;
   createdAt: Date | null;
