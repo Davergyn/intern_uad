@@ -114,7 +114,7 @@ export default async function ProgramDetail({
               {/* Tombol Daftar Program */}
               <div>
                 <Link
-                  href="/auth/registrasi"
+                  href="/registrasi"
                   className="inline-flex items-center gap-2 rounded-xl bg-[#CB2229] px-6 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-red-700 active:scale-95"
                 >
                   <Rocket className="h-4 w-4" />
@@ -146,7 +146,7 @@ export default async function ProgramDetail({
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Link
-            href="/auth/registrasi"
+            href="/registrasi"
             className="rounded-xl bg-[#CB2229] px-6 py-3 text-center text-sm font-bold tracking-wide text-white shadow-sm transition hover:bg-red-700"
           >
             Daftar Sekarang

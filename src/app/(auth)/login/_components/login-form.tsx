@@ -67,8 +67,8 @@ export default function LoginForm() {
     setError("");
 
     // Menentukan lokasi origin pengalihan yang aman untuk Vercel & Lokal
-    const siteUrl = 
-      process.env.NEXT_PUBLIC_SITE_URL || 
+    const siteUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
       (typeof window !== "undefined" ? window.location.origin : "https://intern-uad-hazel.vercel.app");
 
     const supabase = getSupabaseClient();
@@ -106,7 +106,7 @@ export default function LoginForm() {
             Masuk
           </button>
           <Link
-            href="/auth/registrasi"
+            href="/registrasi"
             className="px-6 py-3 font-bold text-[#9ca3af] hover:text-[#111827]"
           >
             Daftar
@@ -275,7 +275,7 @@ export default function LoginForm() {
       <p className="mt-8 text-sm text-[#6b7280]">
         Belum punya akun?{" "}
         <Link
-          href="/auth/registrasi"
+          href="/registrasi"
           className="text-[#d32626] font-bold hover:underline"
         >
           Daftar di sini

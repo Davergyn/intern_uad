@@ -5,7 +5,7 @@ import { programs, materials } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { Rocket, BadgeCheck, Users, Mail, LayoutGrid } from "lucide-react";
 // Pastikan path ke HeroSlider sudah benar sesuai struktur folder Anda
-import HeroSlider from "../_components/HeroSlider"; 
+import HeroSlider from "../_components/HeroSlider";
 
 export const metadata = {
   title: "Training of Trainer – .id Academy",
@@ -37,12 +37,12 @@ export default async function TrainingOfTrainerPage() {
 
   return (
     <main className="min-h-screen bg-white text-[#111827]">
-      
+
       {/* ── HERO SECTION ── */}
       <section className="w-full border-b border-gray-50 bg-white">
         <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
           <div className="flex flex-col items-center gap-10 lg:flex-row lg:gap-16">
-            
+
             {/* Kiri: Slider Gambar Interaktif */}
             <div className="w-full shrink-0 lg:w-[480px]">
               <HeroSlider images={heroImages} />
@@ -77,7 +77,7 @@ export default async function TrainingOfTrainerPage() {
               {/* Tombol Utama */}
               <div className="mt-6">
                 <Link
-                  href="/auth/registrasi"
+                  href="/registrasi"
                   className="inline-flex items-center gap-2 rounded-xl bg-[#CB2229] px-8 py-4 text-base font-bold text-white shadow-lg shadow-red-200 transition-all hover:bg-[#a01b20] hover:shadow-xl hover:shadow-red-200 active:scale-95"
                 >
                   Daftar Program
@@ -154,7 +154,7 @@ export default async function TrainingOfTrainerPage() {
       {/* ── BOTTOM CTA BANNER ── */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-8 rounded-3xl border border-gray-200 bg-white p-8 shadow-xl shadow-gray-100/50 sm:p-12 lg:flex-row">
-          
+
           {/* Kiri: Teks */}
           <div className="flex-1 text-center lg:text-left">
             <h2 className="text-2xl font-extrabold text-[#1f2937] sm:text-3xl">
@@ -185,7 +185,7 @@ export default async function TrainingOfTrainerPage() {
               Program lain
             </Link>
           </div>
-          
+
         </div>
       </section>
 

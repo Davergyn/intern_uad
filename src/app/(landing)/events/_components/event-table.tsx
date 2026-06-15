@@ -222,7 +222,7 @@ export function EventTable({
 
   const handleRegisterClick = () => {
     setShowLoginModal(false);
-    router.push("/auth/registrasi");
+    router.push("/registrasi");
   };
 
   return (
@@ -247,9 +247,8 @@ export function EventTable({
               ].map((column) => (
                 <th
                   key={column}
-                  className={`whitespace-nowrap border-b-2 border-gray-100 px-6 py-5 text-[0.9rem] font-semibold text-gray-400 ${
-                    column === "Simpan" ? "text-center" : ""
-                  }`}
+                  className={`whitespace-nowrap border-b-2 border-gray-100 px-6 py-5 text-[0.9rem] font-semibold text-gray-400 ${column === "Simpan" ? "text-center" : ""
+                    }`}
                 >
                   {column}
                 </th>
@@ -266,9 +265,8 @@ export function EventTable({
                 >
                   <td className="whitespace-nowrap px-6 py-4">
                     <span
-                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${
-                        TYPE_BADGE[event.eventType]
-                      }`}
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${TYPE_BADGE[event.eventType]
+                        }`}
                     >
                       {TYPE_LABEL[event.eventType]}
                     </span>
@@ -281,9 +279,8 @@ export function EventTable({
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                        DELIVERY_BADGE[event.deliveryMode]
-                      }`}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${DELIVERY_BADGE[event.deliveryMode]
+                        }`}
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-current" />
                       {DELIVERY_LABEL[event.deliveryMode]}

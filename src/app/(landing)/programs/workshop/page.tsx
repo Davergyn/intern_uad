@@ -5,7 +5,7 @@ import { programs, materials } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { Rocket, BadgeCheck, Users, Mail, LayoutGrid } from "lucide-react";
 // Import slider yang baru saja dibuat
-import HeroSlider from "../_components/HeroSlider"; 
+import HeroSlider from "../_components/HeroSlider";
 
 export const metadata = {
   title: "Workshop – .id Academy",
@@ -38,7 +38,7 @@ export default async function WorkshopPage() {
       <section className="w-full border-b border-gray-50 bg-white">
         <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-20">
           <div className="flex flex-col items-center gap-10 lg:flex-row lg:gap-16">
-            
+
             {/* Kiri: Slider Gambar Interaktif */}
             <div className="w-full shrink-0 lg:w-[480px]">
               <HeroSlider images={heroImages} />
@@ -73,7 +73,7 @@ export default async function WorkshopPage() {
               {/* Tombol Utama */}
               <div className="mt-6">
                 <Link
-                  href="/auth/registrasi"
+                  href="/registrasi"
                   className="inline-flex items-center gap-2 rounded-xl bg-[#CB2229] px-8 py-4 text-base font-bold text-white shadow-lg shadow-red-200 transition-all hover:bg-[#a01b20] hover:shadow-xl hover:shadow-red-200 active:scale-95"
                 >
                   Daftar Program
