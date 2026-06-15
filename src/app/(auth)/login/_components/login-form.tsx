@@ -66,11 +66,16 @@ export default function LoginForm() {
     setGoogleLoading(true);
     setError("");
 
+    // Menentukan lokasi origin pengalihan yang aman untuk Vercel & Lokal
+    const siteUrl = 
+      process.env.NEXT_PUBLIC_SITE_URL || 
+      (typeof window !== "undefined" ? window.location.origin : "https://intern-uad-hazel.vercel.app");
+
     const supabase = getSupabaseClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${siteUrl}/api/auth/callback`,
       },
     });
 

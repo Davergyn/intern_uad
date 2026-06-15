@@ -8,7 +8,11 @@ import { createBrowserClient } from "@supabase/ssr";
 // (bukan saat modul di-import), agar env vars tersedia di runtime.
 export function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
+  // Gunakan ANON_KEY sebagai standar Supabase, fallback ke PUBLISHABLE_KEY untuk compat lama
+  const supabaseKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    "";
   return createBrowserClient(supabaseUrl, supabaseKey);
 }
 
