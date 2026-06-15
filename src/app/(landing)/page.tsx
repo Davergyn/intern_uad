@@ -254,18 +254,17 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
             </div>
           ) : (
             <div
-              className="flex w-max shrink-0 items-center gap-12 sm:gap-20"
-              style={{ animation: "marquee 20s linear infinite" }}
+              className="flex w-max shrink-0 items-center gap-8 sm:gap-12 partner-marquee"
             >
-              {[...partners, ...partners].map((p, index) => (
+              {[...partners, ...partners, ...partners].map((p, index) => (
                 <div
                   key={`${p.id}-${index}`}
-                  className="flex h-32 w-32 shrink-0 items-center justify-center p-4 transition-all duration-300 sm:h-48 sm:w-48"
+                  className="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white p-3 shadow-sm transition-all duration-300 hover:scale-105 hover:shadow-md sm:h-24 sm:w-36"
                 >
                   <img
-                    src={p.imageUrl || "undefined"}
+                    src={p.imageUrl || ""}
                     alt={p.name || "Partner Logo"}
-                    className="h-full w-full object-contain filter grayscale transition-all duration-300 hover:filter-none"
+                    className="h-full w-full object-contain filter grayscale transition-all duration-300 hover:grayscale-0"
                   />
                 </div>
               ))}
@@ -275,12 +274,18 @@ export default async function Alt1Page({ searchParams }: Alt1PageProps) {
 
         <style>{`
           @keyframes marquee {
-            0% { transform: translateX(0%); }
-            100% { transform: translateX(-50%); }
+            0%   { transform: translateX(0%); }
+            100% { transform: translateX(-33.333%); }
+          }
+          .partner-marquee {
+            animation: marquee 8s linear infinite;
+          }
+          .partner-marquee:hover {
+            animation-play-state: paused;
           }
           .mask-gradient {
-            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
           }
         `}</style>
       </section>

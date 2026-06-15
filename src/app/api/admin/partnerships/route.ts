@@ -4,6 +4,8 @@ import { partnerships } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { supabase } from "@/lib/supabaseClient";
 
+type PartnershipKategori = "instansi" | "registrar" | "akademisi" | "komunitas";
+
 // Helper: Upload file ke Supabase Storage dan return public URL
 async function uploadLogo(file: File): Promise<string> {
   const uniqueFileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
@@ -27,6 +29,16 @@ async function uploadLogo(file: File): Promise<string> {
   return publicUrlData.publicUrl;
 }
 
+// Helper: Extract form fields dari FormData
+function extractFormFields(formData: FormData) {
+  return {
+    name: (formData.get("name") as string)?.trim() || "",
+    kategori: (formData.get("kategori") as PartnershipKategori) || "instansi",
+    description: (formData.get("description") as string) || null,
+    isActive: formData.get("isActive") === "true",
+  };
+}
+
 export async function GET() {
   try {
     const data = await db.select().from(partnerships).orderBy(desc(partnerships.id));
@@ -43,9 +55,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const name = (formData.get("name") as string)?.trim();
+    const fields = extractFormFields(formData);
 
-    if (!name) {
+    if (!fields.name) {
       return NextResponse.json(
         { error: "Nama partner wajib diisi." },
         { status: 400 },
@@ -53,14 +65,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle logo upload
-    let logoUrl: string | null = null;
+    let imageUrl: string | null = null;
     const logoFile = formData.get("logo") as File | null;
 
     if (logoFile && logoFile.size > 0) {
-      logoUrl = await uploadLogo(logoFile);
+      imageUrl = await uploadLogo(logoFile);
     }
 
-    if (!logoUrl) {
+    if (!imageUrl) {
       return NextResponse.json(
         { error: "Logo partner wajib diupload." },
         { status: 400 },
@@ -70,8 +82,11 @@ export async function POST(request: NextRequest) {
     const [inserted] = await db
       .insert(partnerships)
       .values({
-        name,
-        logoUrl,
+        name: fields.name,
+        kategori: fields.kategori,
+        description: fields.description,
+        imageUrl,
+        isActive: fields.isActive,
       })
       .returning();
 
@@ -96,9 +111,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "ID wajib diisi." }, { status: 400 });
     }
 
-    const name = (formData.get("name") as string)?.trim();
+    const fields = extractFormFields(formData);
 
-    if (!name) {
+    if (!fields.name) {
       return NextResponse.json(
         { error: "Nama partner wajib diisi." },
         { status: 400 },
@@ -106,19 +121,17 @@ export async function PUT(request: NextRequest) {
     }
 
     // Handle logo upload
-    let logoUrl: string | null = null;
+    let imageUrl: string | null = null;
     const logoFile = formData.get("logo") as File | null;
     const existingLogoUrl = formData.get("existingLogoUrl") as string | null;
 
     if (logoFile && logoFile.size > 0) {
-      // Upload file baru
-      logoUrl = await uploadLogo(logoFile);
+      imageUrl = await uploadLogo(logoFile);
     } else if (existingLogoUrl) {
-      // Pakai URL yang sudah ada (tidak ganti logo)
-      logoUrl = existingLogoUrl;
+      imageUrl = existingLogoUrl;
     }
 
-    if (!logoUrl) {
+    if (!imageUrl) {
       return NextResponse.json(
         { error: "Logo partner wajib diupload." },
         { status: 400 },
@@ -128,8 +141,11 @@ export async function PUT(request: NextRequest) {
     const [updated] = await db
       .update(partnerships)
       .set({
-        name,
-        logoUrl,
+        name: fields.name,
+        kategori: fields.kategori,
+        description: fields.description,
+        imageUrl,
+        isActive: fields.isActive,
         updatedAt: new Date(),
       })
       .where(eq(partnerships.id, id))

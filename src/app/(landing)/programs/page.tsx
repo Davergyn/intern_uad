@@ -38,7 +38,7 @@ export default async function ProgramsPage() {
           .select()
           .from(partnerships)
           .limit(1);
-        imageUrl = result[0]?.logoUrl ?? null;
+        imageUrl = result[0]?.imageUrl ?? null;
       } else if (program.kategori) {
         const result = await db
           .select()

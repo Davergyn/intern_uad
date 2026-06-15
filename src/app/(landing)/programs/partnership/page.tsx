@@ -127,19 +127,24 @@ export default async function PartnershipPage() {
                   {category.data.map((partner) => (
                     <div
                       key={partner.id}
-                      className="group flex h-28 w-full items-center justify-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all hover:border-[#CB2229]/30 hover:shadow-md"
+                      title={partner.description ?? partner.name}
+                      className="group relative flex h-28 w-full flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-[#CB2229]/30 hover:shadow-md overflow-hidden"
                     >
                       {partner.imageUrl ? (
                         <img
                           src={partner.imageUrl}
                           alt={partner.name}
-                          className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105 filter grayscale hover:grayscale-0"
+                          className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105 filter grayscale group-hover:grayscale-0"
                         />
                       ) : (
                         <span className="text-xs font-bold text-gray-400 text-center break-words">
                           {partner.name}
                         </span>
                       )}
+                      {/* Overlay hover dengan nama */}
+                      <div className="absolute inset-x-0 bottom-0 translate-y-full bg-[#CB2229]/90 px-2 py-1.5 text-center transition-transform duration-200 group-hover:translate-y-0">
+                        <p className="truncate text-[10px] font-bold text-white">{partner.name}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
