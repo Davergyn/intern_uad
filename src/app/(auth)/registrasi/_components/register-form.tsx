@@ -38,7 +38,7 @@ export default function RegisterForm() {
     if (result.success) {
       setSuccessMessage("Akun berhasil dibuat! Mengalihkan ke login...");
       setTimeout(() => {
-        router.push("/auth/login");
+        router.push("/login");
       }, 1500);
     } else {
       setIsLoading(false);
@@ -66,7 +66,7 @@ export default function RegisterForm() {
       <div className="w-full max-w-md mb-8">
         <div className="flex gap-2 border-b border-[#e5e7eb]">
           <Link
-            href="/auth/login"
+            href="/login"
             className="px-6 py-3 font-bold text-[#9ca3af] hover:text-[#111827]"
           >
             Masuk
@@ -225,7 +225,7 @@ export default function RegisterForm() {
       <p className="mt-8 text-sm text-[#6b7280]">
         Sudah punya akun?{" "}
         <Link
-          href="/auth/login"
+          href="/login"
           className="text-[#d32626] font-bold hover:underline"
         >
           Masuk di sini

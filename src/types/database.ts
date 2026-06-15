@@ -112,6 +112,44 @@ export type AdminRow = {
 };
 
 // ============================================================================
+// ARTIKEL / BLOG (template fitur baru)
+// ============================================================================
+
+export type ArticleStatus = "draft" | "published" | "archived";
+export type ArticleCategory =
+  | "keamanan-siber"
+  | "infrastruktur"
+  | "regulasi"
+  | "edukasi"
+  | "teknologi";
+
+export type ArticleRow = {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string | null;
+  coverUrl: string | null;
+  category: ArticleCategory;
+  status: ArticleStatus;
+  authorId: number | null;
+  publishedAt: Date | null;
+  createdBy: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+};
+
+export type ArticleFormValues = {
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string | null;
+  coverUrl: string | null;
+  category: ArticleCategory;
+  status: ArticleStatus;
+};
+
+// ============================================================================
 // RELATIONSHIP/JUNCTION TABLES
 // ============================================================================
 

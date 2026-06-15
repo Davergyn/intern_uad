@@ -7,11 +7,25 @@ import {
   programs,
   partnerships,
   trainers,
+  eventTrainers,
   eventRegistrations,
   users,
 } from "@/db/schema";
-import { gte, lt, eq, and, count, countDistinct, desc } from "drizzle-orm";
+import { gte, lt, eq, and, count, countDistinct, desc, inArray } from "drizzle-orm";
 import type { EventRow, ProgramRow } from "@/types/database";
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export type TrainerMini = {
+  id: number;
+  name: string;
+  roleTitle: string | null;
+  photoUrl: string | null;
+};
+
+export type EventWithTrainers = EventRow & { trainers: TrainerMini[] };
 
 // ============================================================================
 // DATA FETCHING
@@ -22,7 +36,7 @@ import type { EventRow, ProgramRow } from "@/types/database";
  * Mendeskripsikan seluruh data yang dibutuhkan oleh halaman landing.
  */
 export type LandingPageData = {
-  upcomingEvents: EventRow[];
+  upcomingEvents: EventWithTrainers[];
   pastEvents: EventRow[];
   partners: Awaited<ReturnType<typeof fetchPartners>>;
   totalEvents: number;
@@ -98,8 +112,46 @@ export async function fetchLandingPageData(): Promise<LandingPageData> {
     db.select({ count: count() }).from(users),
   ]);
 
+  // Setelah mendapat upcomingEvents, lakukan batch JOIN ke trainer
+  const eventIds = upcomingEvents.map((e) => e.id);
+  let upcomingEventsWithTrainers: EventWithTrainers[];
+
+  if (eventIds.length === 0) {
+    upcomingEventsWithTrainers = [];
+  } else {
+    const eventTrainerRows = await db
+      .select()
+      .from(eventTrainers)
+      .where(inArray(eventTrainers.eventId, eventIds));
+
+    const trainerIds = [...new Set(eventTrainerRows.map((et) => et.trainerId))];
+    let trainerMap = new Map<number, TrainerMini>();
+
+    if (trainerIds.length > 0) {
+      const trainerRows = await db
+        .select({
+          id: trainers.id,
+          name: trainers.name,
+          roleTitle: trainers.roleTitle,
+          photoUrl: trainers.photoUrl,
+        })
+        .from(trainers)
+        .where(inArray(trainers.id, trainerIds));
+
+      trainerMap = new Map(trainerRows.map((t) => [t.id, t]));
+    }
+
+    upcomingEventsWithTrainers = upcomingEvents.map((event) => ({
+      ...event,
+      trainers: eventTrainerRows
+        .filter((et) => et.eventId === event.id)
+        .map((et) => trainerMap.get(et.trainerId))
+        .filter((t): t is TrainerMini => t !== undefined),
+    }));
+  }
+
   return {
-    upcomingEvents,
+    upcomingEvents: upcomingEventsWithTrainers,
     pastEvents,
     partners,
     totalEvents: totalEventsResult[0]?.count || 0,

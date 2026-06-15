@@ -217,7 +217,7 @@ export function EventTable({
 
   const handleLoginClick = () => {
     setShowLoginModal(false);
-    router.push("/auth/login");
+    router.push("/login");
   };
 
   const handleRegisterClick = () => {

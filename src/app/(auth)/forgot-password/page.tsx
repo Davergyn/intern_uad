@@ -56,7 +56,7 @@ export default function ForgotPasswordPage() {
               <p className="mt-16 text-center text-[1.02rem] text-[#fff1f1] sm:text-[1.05rem]">
                 Already have an account?{" "}
                 <Link
-                  href="/auth/login"
+                  href="/login"
                   className="font-medium text-white underline-offset-4 transition hover:underline"
                 >
                   Login

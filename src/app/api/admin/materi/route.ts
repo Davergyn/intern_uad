@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 
 /** Representasi satu lampiran (baik tipe 'url' maupun 'pdf'). */
 interface Attachment {
-  type: "url" | "pdf";
+  type: "link" | "pdf";
   name: string;
   url: string;
 }
@@ -73,7 +73,7 @@ async function uploadPdfAttachments(
 
     const publicUrl = await uploadFile(entry, "document");
     results.push({
-      type: "pdf",
+      type: "pdf" as const,
       name: entry.name,
       url: publicUrl,
     });
@@ -286,7 +286,7 @@ export async function POST(request: NextRequest) {
         // Kolom legacy dipertahankan selama masa transisi
         materialType: "multipack",
         linkUrl: null,
-        attachments: [],
+        attachments: null,
       })
       .returning();
 
@@ -444,7 +444,7 @@ export async function PUT(request: NextRequest) {
     // Logika: PDF lama (DB) yang URL-nya tidak ada lagi di existingLinks
     // berarti user telah mengklik tombol hapus (X) pada item tersebut.
     const keptPdfUrls = new Set(
-      existingLinks.filter((a) => a.type === "pdf").map((a) => a.url),
+      existingLinks.filter((a: Attachment) => a.type === "pdf").map((a: Attachment) => a.url),
     );
 
     const deletedPdfLinks = oldPdfLinks.filter(

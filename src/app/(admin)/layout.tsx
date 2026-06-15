@@ -42,7 +42,7 @@ export default function AdminDashboardLayout({ children }: { children: React.Rea
   // Auth guard — redirect jika bukan admin
   useEffect(() => {
     if (isMounted && !isAdmin) {
-      router.replace("/auth/login");
+      router.replace("/login");
     }
   }, [isAdmin, isMounted, router]);
 

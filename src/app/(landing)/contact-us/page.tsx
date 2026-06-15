@@ -1,198 +1,252 @@
 ﻿import React from "react";
 
 export const metadata = {
-  title: "Contact Us â€“ .id Academy",
-  description:
-    "Hubungi tim .id Academy â€“ kami siap membantu Anda melalui telepon, email, maupun Instagram @dotidacademy.",
+  title: "Contact Us – .id Academy",
+  description: "Punya pertanyaan atau ingin berkolaborasi? Hubungi tim .id Academy.",
 };
-
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-//  PAGE
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function ContactUsPage() {
   return (
-    <main className="min-h-screen bg-white text-[#111827]">
+    <main className="min-h-screen bg-white">
+      {/* ══════════════════════════════════════════════════════════════════════
+          1. HERO SECTION (MAP SEBAGAI BACKGROUND TAJAM)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="relative pt-24 pb-48 lg:pt-32 lg:pb-56 overflow-hidden">
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          TOP SECTION â€” grey background
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-      <section className="relative bg-[#f3f4f6] pt-20 pb-32 lg:pb-36">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-16">
+        {/* ── Background Map & Overlay ── */}
+        <div className="absolute inset-0 z-0">
+          <iframe
+            src="https://www.google.com/maps?q=Pengelola+Nama+Domain+Internet+Indonesia+(PANDI)+Icon+Business+Park+BSD&output=embed"
+            className="h-full w-full border-0"
+            allowFullScreen={false}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title="Lokasi .id Academy (PANDI)"
+          ></iframe>
 
-            {/* â”€â”€ Left: Heading â”€â”€ */}
-            <div className="flex-1">
-              <h1 className="text-4xl font-extrabold leading-tight text-[#1f2937] lg:text-5xl">
-                .id Academy
-              </h1>
-              <p className="mt-4 text-[1.1rem] leading-relaxed text-[#4b5563]">
-                Contact us with pleasure on Instagram
-                <br />
-                <a
-                  href="https://instagram.com/dotidacademy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-[#1f2937] transition hover:text-[#d6362f]"
-                >
-                  @dotidacademy
-                </a>
-              </p>
-            </div>
+          {/* >>> PERBAIKAN: Gradien Putih Tipis di kiri agar teks terbaca,
+              tapi map tetap tajam dan jelas di kanan <<< */}
+          <div className="absolute inset-0 bg-linear-to-r from-white/70 via-white/40 to-transparent"></div>
+        </div>
 
-            {/* â”€â”€ Right: Monitor image (overlaps downward) â”€â”€ */}
-            <div className="relative w-full lg:w-[480px] lg:flex-shrink-0 lg:-mb-28">
-              <div className="overflow-hidden rounded-xl shadow-2xl bg-[#e5e7eb] aspect-[4/3] flex items-center justify-center">
-                {/* Placeholder â€” replace src with actual image */}
-                <div className="flex flex-col items-center justify-center gap-3 opacity-30 p-10">
-                  <svg
-                    className="h-20 w-20 text-[#6b7280]"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={1.2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 7.409A2.25 2.25 0 012.25 5.493V5.25"
-                    />
-                  </svg>
-                  <p className="text-sm font-medium text-[#9ca3af]">
-                    Gambar akan ditambahkan
-                  </p>
-                </div>
-              </div>
-            </div>
-
+        {/* ── Konten Teks di Atas Map ── */}
+        <div className="relative z-10 mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            {/* Warna teks diubah menjadi gelap agar terbaca di atas map terang */}
+            <h1 className="text-4xl font-extrabold text-[#1f2937] lg:text-5xl">
+              Hubungi Kami
+            </h1>
+            <p className="mt-4 text-[1.1rem] leading-relaxed text-[#4b5563] font-medium">
+              Punya pertanyaan atau ingin berkolaborasi? Jangan ragu untuk menghubungi kami.<br />
+              {/* Link Instagram tetap merah agar menonjol */}
+              <a href="https://instagram.com/dotidacademy" className="font-semibold text-[#CB2229] underline decoration-[#CB2229]/30 underline-offset-4 transition hover:text-[#a01b20]">
+                @dotidacademy
+              </a>
+            </p>
           </div>
         </div>
       </section>
 
-      {/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-          BOTTOM SECTION â€” white background
-      â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */}
-      <section className="bg-white pt-12 pb-24">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row lg:gap-16">
+      {/* ══════════════════════════════════════════════════════════════════════
+          2. FLOATING CONTACT INFO BAR (Seperti di Gambar_3.png)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="relative z-20 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 -mt-20 lg:-mt-24">
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-xl grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
 
-            {/* â”€â”€ Call Us card (overlaps upward) â”€â”€ */}
-            <div className="w-full lg:w-[420px] lg:flex-shrink-0 -mt-20 lg:-mt-24 relative z-10">
-              <div className="rounded-2xl border border-gray-100 bg-white p-8 shadow-xl">
-                <h2 className="mb-6 text-2xl font-bold text-[#1f2937]">Call Us</h2>
+          {/* Telepon (Merah) */}
+          <a href="tel:+622130055777" className="group flex items-center justify-between p-4 transition-colors hover:bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-[#CB2229]">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Telepon</p>
+                <p className="text-sm font-bold text-gray-900">+62 21 3005 5777</p>
+              </div>
+            </div>
+            <svg className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-[#CB2229]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+          </a>
 
-                {/* Phone */}
-                <p className="text-[0.95rem] font-bold text-[#1f2937]">
-                  Contact our award-winning support team :
-                </p>
-                <a
-                  href="tel:+622130055777"
-                  className="mt-1 block text-[1rem] font-bold text-[#0ea5e9] transition hover:underline"
-                >
-                  +622130055777
-                </a>
+          {/* Email (Emerald) */}
+          <a href="mailto:literasi@pandi.id" className="group flex items-center justify-between p-4 transition-colors hover:bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Email</p>
+                <p className="text-sm font-bold text-gray-900">literasi@pandi.id</p>
+              </div>
+            </div>
+            <svg className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+          </a>
 
-                {/* Email */}
-                <p className="mt-6 text-[0.95rem] font-bold text-[#1f2937]">
-                  Or contact our email support team :
-                </p>
-                <a
-                  href="mailto:literasi@pandi.id"
-                  className="mt-1 block text-[1rem] font-bold text-[#0ea5e9] transition hover:underline"
-                >
-                  literasi@pandi.id
-                </a>
+{/* Alamat (Merah) */}
+          <a 
+            href="https://www.google.com/maps/search/?api=1&query=Pandi+Registry&query_place_id=ChIJ9-VWyLnkaS4RZUTUPJ2LjNk" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="group flex items-center justify-between p-4 transition-colors hover:bg-gray-50 rounded-xl"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-[#CB2229]">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Alamat</p>
+                <p className="text-sm font-bold text-gray-900 line-clamp-1">Icon Business Park Unit L...</p>
+              </div>
+            </div>
+            {/* Ikon panah miring (↗) sebagai indikator link eksternal */}
+            <svg className="h-4 w-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-[#CB2229]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
 
-                {/* Extra info */}
-                <div className="mt-8 flex items-center gap-3 rounded-xl bg-[#f9fafb] px-4 py-3">
-                  <svg
-                    className="h-5 w-5 flex-shrink-0 text-[#10b981]"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <p className="text-xs text-[#6b7280]">
-                    Kami siap membantu Seninâ€“Jumat, pukul 08.00â€“17.00 WIB.
-                  </p>
+          {/* Instagram (Merah) */}
+          <a href="https://instagram.com/dotidacademy" target="_blank" rel="noreferrer" className="group flex items-center justify-between p-4 transition-colors hover:bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-[#CB2229]">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Instagram</p>
+                <p className="text-sm font-bold text-gray-900">@dotidacademy</p>
+              </div>
+            </div>
+            <svg className="h-4 w-4 text-gray-400 group-hover:text-[#CB2229]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </a>
+
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════════════════
+          3. MAIN CONTENT (Seperti di Gambar_3.png)
+      ══════════════════════════════════════════════════════════════════════ */}
+      <section className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
+          {/* ── Kiri: Judul & Benefit (Style Emerald & Dark Red) ── */}
+          <div>
+            <span className="text-xs font-black tracking-widest text-emerald-600 uppercase">Kirim Pesan</span>
+            <h2 className="mt-3 text-4xl font-extrabold text-[#9A1B1F] leading-tight lg:text-5xl">
+              Atau tulis pesan ke tim kami
+            </h2>
+            <p className="mt-5 text-gray-600 leading-relaxed text-[1.05rem]">
+              Punya pertanyaan, kerjasama, atau saran? Isi form di samping dan tim .id Academy akan membalas pesan kamu.
+            </p>
+
+            <div className="mt-10 flex flex-col gap-8">
+              {/* Feature 1 */}
+              <div className="flex gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#CB2229]">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" /></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-[#9A1B1F]">Balasan Personal</h3>
+                  <p className="text-sm text-gray-500 mt-1">Dijawab langsung oleh tim .id Academy</p>
+                </div>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-emerald-600">Gratis & Tanpa Syarat</h3>
+                  <p className="text-sm text-gray-500 mt-1">Tidak ada biaya untuk konsultasi atau pertanyaan</p>
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-[#CB2229]">
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                </div>
+                <div>
+                  <h3 className="font-bold text-emerald-600">Data Aman</h3>
+                  <p className="text-sm text-gray-500 mt-1">Pesan kamu hanya dibaca tim .id Academy</p>
                 </div>
               </div>
             </div>
-
-            {/* â”€â”€ Right: Additional info / spacer on desktop â”€â”€ */}
-            <div className="mt-10 flex-1 lg:mt-0 lg:pt-6">
-              <h2 className="text-2xl font-bold text-[#1f2937]">
-                Ada yang bisa kami bantu?
-              </h2>
-              <p className="mt-3 text-[0.95rem] leading-7 text-[#6b7280]">
-                Tim .id Academy siap menjawab pertanyaan Anda seputar program
-                pelatihan, pendaftaran, materi, maupun kemitraan. Jangan ragu
-                untuk menghubungi kami melalui saluran yang tersedia.
-              </p>
-
-              {/* Contact options */}
-              <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                {[
-                  {
-                    label: "Instagram",
-                    value: "@dotidacademy",
-                    href: "https://instagram.com/dotidacademy",
-                    icon: (
-                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
-                        <rect x="5" y="5" width="14" height="14" rx="4" />
-                        <circle cx="12" cy="12" r="3.2" />
-                        <circle cx="16.7" cy="7.3" r="1" fill="currentColor" stroke="none" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    label: "Email",
-                    value: "literasi@pandi.id",
-                    href: "mailto:literasi@pandi.id",
-                    icon: (
-                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                      </svg>
-                    ),
-                  },
-                  {
-                    label: "Telepon",
-                    value: "+622130055777",
-                    href: "tel:+622130055777",
-                    icon: (
-                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                      </svg>
-                    ),
-                  },
-                ].map((item) => (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    target={item.href.startsWith("http") ? "_blank" : undefined}
-                    rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="group flex flex-col gap-2 rounded-xl border border-gray-100 bg-[#f9fafb] p-4 transition hover:border-[#d6362f]/30 hover:shadow-sm"
-                  >
-                    <span className="text-[#6b7280] transition group-hover:text-[#d6362f]">
-                      {item.icon}
-                    </span>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-[#9ca3af]">
-                      {item.label}
-                    </span>
-                    <span className="text-sm font-bold text-[#1f2937] break-all">
-                      {item.value}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            </div>
-
           </div>
+
+          {/* ── Kanan: Form Kontak (Gaya Melayang) ── */}
+          <div className="rounded-3xl bg-white p-8 shadow-2xl shadow-gray-200/50 border border-gray-100 relative overflow-hidden">
+            {/* Aksen border merah di sisi kiri (Seperti di Gambar_3.png) */}
+            <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-[#CB2229]" />
+
+            <form className="flex flex-col gap-6">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {/* Nama */}
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Nama Lengkap *</label>
+                  <input
+                    type="text"
+                    placeholder="Nama kamu"
+                    className="w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-sm text-gray-900 ring-1 ring-inset ring-gray-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-[#CB2229] outline-none"
+                  />
+                </div>
+                {/* Email */}
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Email *</label>
+                  <input
+                    type="email"
+                    placeholder="email@kamu.com"
+                    className="w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-sm text-gray-900 ring-1 ring-inset ring-gray-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-[#CB2229] outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Subjek */}
+              <div>
+                <label className="mb-2 block text-sm font-bold text-gray-700">Subjek (opsional)</label>
+                <input
+                  type="text"
+                  placeholder="Topik pesan kamu"
+                  className="w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-sm text-gray-900 ring-1 ring-inset ring-gray-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-[#CB2229] outline-none"
+                />
+              </div>
+
+              {/* Pesan */}
+              <div>
+                <label className="mb-2 block text-sm font-bold text-gray-700">Pesan *</label>
+                <textarea
+                  rows={5}
+                  placeholder="Tulis pesan kamu di sini..."
+                  className="w-full rounded-xl border-0 bg-gray-50 px-4 py-3.5 text-sm text-gray-900 ring-1 ring-inset ring-gray-200 transition focus:bg-white focus:ring-2 focus:ring-inset focus:ring-[#CB2229] outline-none resize-y"
+                ></textarea>
+                <p className="mt-2 text-xs font-medium text-gray-400">Minimal 10 karakter</p>
+              </div>
+
+              {/* Button Submit (Merah) */}
+              <button
+                type="button"
+                className="mt-2 flex w-max items-center justify-center gap-2 rounded-xl bg-[#CB2229] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#a01b20] active:scale-95 shadow-md shadow-red-200"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+                Kirim Pesan
+              </button>
+            </form>
+          </div>
+
         </div>
-      </section>    </main>
+      </section>
+
+    </main>
   );
 }

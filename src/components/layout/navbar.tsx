@@ -20,74 +20,7 @@ interface NavbarProps {
 //  NAV ICONS
 // ─────────────────────────────────────────────
 
-const icons: Record<string, React.ReactNode> = {
-  "About Us": (
-    <svg
-      className="h-3.75 w-3.75 shrink-0"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M3 5a1 1 0 011-1h2a1 1 0 010 2H4a1 1 0 01-1-1zm0 7a1 1 0 011-1h2a1 1 0 010 2H4a1 1 0 01-1-1zm0 7a1 1 0 011-1h2a1 1 0 010 2H4a1 1 0 01-1-1zm5-14a1 1 0 011-1h10a1 1 0 010 2H9a1 1 0 01-1-1zm0 7a1 1 0 011-1h10a1 1 0 010 2H9a1 1 0 01-1-1zm0 7a1 1 0 011-1h10a1 1 0 010 2H9a1 1 0 01-1-1z" />
-    </svg>
-  ),
-  Events: (
-    <svg
-      className="h-3.75 w-3.75 shrink-0"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path
-        fillRule="evenodd"
-        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
-        clipRule="evenodd"
-      />
-    </svg>
-  ),
-  Programs: (
-    <svg
-      className="h-3.75 w-3.75 shrink-0"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path
-        fillRule="evenodd"
-        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 6a.75.75 0 00-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5h-3.75V6z"
-        clipRule="evenodd"
-      />
-    </svg>
-  ),
-  Trainers: (
-    <svg
-      className="h-3.75 w-3.75 shrink-0"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-    </svg>
-  ),
-  Materi: (
-    <svg
-      className="h-3.75 w-3.75 shrink-0"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z" />
-    </svg>
-  ),
-  "Contact Us": (
-    <svg
-      className="h-3.75 w-3.75 shrink-0"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path
-        fillRule="evenodd"
-        d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-        clipRule="evenodd"
-      />
-    </svg>
-  ),
-};
+
 
 // ─────────────────────────────────────────────
 //  DATA CONFIG
@@ -99,6 +32,7 @@ const eventsDropdown = [
 ];
 
 const programsDropdown = [
+  { label: "Semua Program", href: "/programs" },
   { label: "Training of Trainer", href: "/programs/training-of-trainer" },
   { label: "Seminar", href: "/programs/seminar" },
   { label: "Workshop", href: "/programs/workshop" },
@@ -171,12 +105,10 @@ function useActiveSection(sectionIds: string[]) {
 function DesktopDropdown({
   label,
   items,
-  isGrid,
   isActive,
 }: {
   label: string;
   items: { label: string; href: string }[];
-  isGrid?: boolean;
   isActive?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -216,7 +148,6 @@ function DesktopDropdown({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        {icons[label]}
         {label}
         <svg
           className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -245,18 +176,13 @@ function DesktopDropdown({
             : "scale-y-95 opacity-0 -translate-y-1 pointer-events-none"
         }`}
       >
-        <div
-          className={`rounded-xl border border-white/20 bg-white/80 p-2 shadow-xl shadow-black/10 backdrop-blur-md ${
-            isGrid ? "grid grid-cols-2 gap-1 min-w-70" : "min-w-45"
-          }`}
-        >
+        <div className="rounded-xl border border-[#e5e7eb] bg-white p-2 shadow-xl shadow-black/10 min-w-56 flex flex-col gap-1">
           {items.map((item) => {
             const isHash = item.href.startsWith("#");
             const className =
               "group/item flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-[#374151] transition-all duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f]";
             const content = (
               <>
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#d6362f]/40 transition-colors group-hover/item:bg-[#d6362f]" />
                 {item.label}
               </>
             );
@@ -310,7 +236,6 @@ function DesktopNavLink({
         isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
       }`}
     >
-      {icons[label]}
       {label}
       <span
         className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#d6362f] transition-all duration-300 ${
@@ -325,7 +250,6 @@ function DesktopNavLink({
         isActive ? "text-[#d6362f]" : "text-[#1f2937] hover:text-[#d6362f]"
       }`}
     >
-      {icons[label]}
       {label}
       <span
         className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-[#d6362f] transition-all duration-300 ${
@@ -449,7 +373,6 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
                 key={item.label}
                 label={item.label}
                 items={item.items}
-                isGrid={item.label === "Programs"}
                 isActive={isDropdownActive(item.items)}
               />
             ) : (
@@ -483,7 +406,7 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
             </div>
           ) : (
             <Link
-              href="/auth/login"
+              href="/login"
               className="hidden rounded-lg bg-[#cf2f2a] px-5 py-2 text-xs font-bold tracking-widest text-white shadow-sm transition-all duration-200 hover:bg-[#b92924] hover:shadow-md lg:block"
             >
               LOG IN
@@ -522,7 +445,7 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
           menuOpen ? "max-h-[80vh] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <nav className="flex flex-col border-t border-black/5 bg-white/95 px-4 pb-5 pt-2 text-sm font-medium text-[#1f2937] backdrop-blur-md">
+        <nav className="flex flex-col border-t border-black/5 bg-white px-4 pb-5 pt-2 text-sm font-medium text-[#1f2937]">
           {navConfig.map((item) =>
             item.type === "dropdown" ? (
               <div key={item.label} className="border-b border-black/5">
@@ -535,8 +458,7 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
                   onClick={() => toggleMobileDropdown(item.label)}
                   aria-expanded={mobileDropdown === item.label}
                 >
-                  <span className="flex items-center gap-2 font-semibold">
-                    {icons[item.label]}
+                  <span className="font-semibold">
                     {item.label}
                   </span>
                   <svg
@@ -560,9 +482,7 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
                       : "max-h-0 opacity-0"
                   }`}
                 >
-                  <div
-                    className={`mb-3 ml-2 ${item.label === "Programs" ? "grid grid-cols-2 gap-1" : "flex flex-col gap-1"}`}
-                  >
+                  <div className="mb-3 ml-2 flex flex-col gap-1">
                     {item.items.map((sub) => {
                       const isHash = sub.href.startsWith("#");
                       const className = `rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 hover:bg-[#d6362f]/8 hover:text-[#d6362f] ${
@@ -607,7 +527,6 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
                   "#" + activeSection === item.href ? "text-[#d6362f]" : ""
                 }`}
               >
-                {icons[item.label]}
                 {item.label}
               </button>
             ) : (
@@ -619,7 +538,6 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
                   "#" + activeSection === item.href ? "text-[#d6362f]" : ""
                 }`}
               >
-                {icons[item.label]}
                 {item.label}
               </Link>
             ),
@@ -643,7 +561,7 @@ export default function Navbar({ userFullName, userEmail }: NavbarProps) {
             </div>
           ) : (
             <Link
-              href="/auth/login"
+              href="/login"
               className="mt-4 w-full block text-center rounded-lg bg-[#cf2f2a] py-3 text-sm font-bold tracking-widest text-white shadow-sm transition-all duration-250 hover:bg-[#b92924] active:scale-95"
               onClick={() => setMenuOpen(false)}
             >

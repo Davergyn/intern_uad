@@ -6,10 +6,10 @@ import {
   formatShortDate,
   formatEventPrice,
 } from "../_lib/formatters";
-import type { EventRow } from "@/types/database";
+import type { EventWithTrainers } from "../_lib/landing-helpers";
 
 type UpcomingCarouselProps = {
-  upcomingEvents: EventRow[];
+  upcomingEvents: EventWithTrainers[];
 };
 
 export default function UpcomingCarousel({ upcomingEvents }: UpcomingCarouselProps) {
@@ -155,7 +155,44 @@ export default function UpcomingCarousel({ upcomingEvents }: UpcomingCarouselPro
                       "Bergabunglah dalam sesi interaktif ini untuk meningkatkan wawasan digital Anda bersama expert."}
                   </p>
 
-                  <div className="mt-5 flex items-center justify-between border-t border-gray-50 pt-4">
+                  {/* Trainer Avatars */}
+                  {event.trainers && event.trainers.length > 0 && (
+                    <div className="mt-4 flex items-center gap-2">
+                      <div className="flex -space-x-2">
+                        {event.trainers.slice(0, 3).map((trainer) =>
+                          trainer.photoUrl ? (
+                            <img
+                              key={trainer.id}
+                              src={trainer.photoUrl}
+                              alt={trainer.name}
+                              title={trainer.name}
+                              className="h-7 w-7 rounded-full object-cover ring-2 ring-white"
+                            />
+                          ) : (
+                            <div
+                              key={trainer.id}
+                              title={trainer.name}
+                              className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 ring-2 ring-white text-[0.6rem] font-bold text-gray-500 uppercase"
+                            >
+                              {trainer.name.charAt(0)}
+                            </div>
+                          )
+                        )}
+                        {event.trainers.length > 3 && (
+                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 ring-2 ring-white text-[0.6rem] font-bold text-gray-500">
+                            +{event.trainers.length - 3}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[0.7rem] text-gray-400 font-medium truncate max-w-[120px]">
+                        {event.trainers.length === 1
+                          ? event.trainers[0].name
+                          : `${event.trainers.length} Trainer`}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex items-center justify-between border-t border-gray-50 pt-4">
                     <div>
                       <span className="block text-[0.65rem] font-bold uppercase text-gray-400">
                         Biaya / Kuota

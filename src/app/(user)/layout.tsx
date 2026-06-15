@@ -61,7 +61,7 @@ export default function DashboardLayout({
     if (!isMounted) return;
 
     if (!currentRole) {
-      router.replace("/auth/login");
+      router.replace("/login");
       return;
     }
 
@@ -72,7 +72,7 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     logout();
-    router.replace("/auth/login");
+    router.replace("/login");
   };
 
   if (!isMounted || !currentRole || isAdmin) {

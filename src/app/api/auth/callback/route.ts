@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
   if (!code) {
     console.error("OAuth callback: tidak ada code di URL");
-    return NextResponse.redirect(`${origin}/auth/login?error=no_code`);
+    return NextResponse.redirect(`${origin}/login?error=no_code`);
   }
 
   // Mengambil akses Cookie dari Next.js
@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
             cookieStore.set({ name, value, ...options });
           });
         } catch (error) {
-          // Abaikan error jika dipanggil dari tempat yang tidak mendukung set cookie
         }
       },
     },
@@ -45,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     if (sessionError || !sessionData?.user) {
       console.error("OAuth callback: gagal menukar code →", sessionError?.message);
-      return NextResponse.redirect(`${origin}/auth/login?error=exchange_failed`);
+      return NextResponse.redirect(`${origin}/login?error=exchange_failed`);
     }
 
     const supabaseUser = sessionData.user;
@@ -63,7 +62,7 @@ export async function GET(request: NextRequest) {
 
     if (!email) {
       console.error("OAuth callback: email tidak ditemukan di profil Google");
-      return NextResponse.redirect(`${origin}/auth/login?error=no_email`);
+      return NextResponse.redirect(`${origin}/login?error=no_email`);
     }
 
     // 3. Cek apakah user sudah ada di tabel Drizzle `users`
@@ -92,6 +91,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/`);
   } catch (error) {
     console.error("OAuth callback: error tidak terduga →", error);
-    return NextResponse.redirect(`${origin}/auth/login?error=unexpected`);
+    return NextResponse.redirect(`${origin}/login?error=unexpected`);
   }
 }

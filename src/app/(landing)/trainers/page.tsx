@@ -1,72 +1,90 @@
-import { Users } from "lucide-react";
+import React from "react";
+import { Users, Calendar, X, Award } from "lucide-react";
 import { db } from "@/db";
-import { trainers } from "@/db/schema";
+import { trainers, eventTrainers, events } from "@/db/schema"; // Pastikan 'events' di-import
 import { eq } from "drizzle-orm";
-import type { TrainerRow } from "@/types/database";
+import ClientTrainerSection from "./ClientTrainerSection"; // Kita akan buat file ini di bawah
 
-function TrainerCard({ trainer }: { trainer: TrainerRow }) {
-  return (
-    <article className="flex min-h-[340px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_4px_20px_rgba(0,0,0,0.04)]">
-      <div className="flex h-[240px] w-full items-end justify-center overflow-hidden bg-[#fafafa]">
-        {trainer.photoUrl ? (
-          <img
-            src={trainer.photoUrl}
-            alt={trainer.name}
-            className="h-full w-full object-cover object-top"
-          />
-        ) : (
-          <div className="mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-[#CB2229]/10">
-            <Users className="h-10 w-10 text-[#CB2229]/50" />
-          </div>
-        )}
-      </div>
-      <div className="p-5 text-center">
-        <h2 className="mb-1.5 line-clamp-2 text-[1.05rem] font-bold leading-tight text-[#1f2937]">
-          {trainer.name}
-        </h2>
-        <p className="text-[0.82rem] text-gray-500">
-          {trainer.roleTitle || "Trainer .id Academy"}
-        </p>
-      </div>
-    </article>
-  );
-}
+export const metadata = {
+  title: "Trainers – .id Academy",
+  description: "Kenali narasumber dan trainer profesional .id Academy.",
+};
 
 export default async function TrainersPage() {
-  const trainerList: TrainerRow[] = await db
-    .select()
+  // BACKEND QUERY: Melakukan Left Join untuk menarik data Trainer sekaligus Event yang mereka ikuti
+  const rows = await db
+    .select({
+      id: trainers.id,
+      name: trainers.name,
+      photoUrl: trainers.photoUrl,
+      deskripsi: trainers.deskripsi,
+      spesialisasi: trainers.spesialisasi,
+      isActive: trainers.isActive,
+      eventId: events.id,
+      eventTitle: events.title, // Mengasumsikan kolom judul di tabel event bernama 'title'
+    })
     .from(trainers)
+    .leftJoin(eventTrainers, eq(trainers.id, eventTrainers.trainerId))
+    .leftJoin(events, eq(eventTrainers.eventId, events.id))
     .where(eq(trainers.isActive, true));
 
+  // AGREGASI DATA: Mengelompokkan hasil join query menjadi array objek trainer dengan list event-nya
+  const trainersMap: Record<number, any> = {};
+  
+  rows.forEach((row) => {
+    if (!trainersMap[row.id]) {
+      trainersMap[row.id] = {
+        id: row.id,
+        name: row.name,
+        photoUrl: row.photoUrl,
+        deskripsi: row.deskripsi,
+        spesialisasi: row.spesialisasi,
+        events: [],
+      };
+    }
+    
+    if (row.eventId && row.eventTitle) {
+      // Masukkan event ke dalam list jika belum terdaftar (mencegah duplikasi)
+      const isExist = trainersMap[row.id].events.some((e: any) => e.id === row.eventId);
+      if (!isExist) {
+        trainersMap[row.id].events.push({
+          id: row.eventId,
+          title: row.eventTitle,
+        });
+      }
+    }
+  });
+
+  const trainerList = Object.values(trainersMap);
+
   return (
-    <main className="min-h-screen bg-[#f9fafb] text-[#111827]">
-      <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-        <div className="mb-10 flex items-center gap-5 rounded-xl bg-[#f3f4f6] p-8">
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-            <Users className="h-7 w-7 text-[#1f2937]" />
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold text-[#1f2937]">Trainers</h1>
-            <p className="mt-1 max-w-xl text-sm text-[#6b7280]">
-              Kenali para narasumber dan trainer profesional .id Academy yang
-              aktif membimbing perjalanan digital Anda.
-            </p>
-          </div>
-        </div>
+    <main className="min-h-screen bg-white text-[#111827]">
+      {/* ── HEADER SECTION ── */}
+      <section className="mx-auto w-full max-w-4xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center border-b border-gray-50">
+        <h1 className="text-4xl font-extrabold text-[#1f2937] sm:text-5xl">
+         Trainer Kami
+        </h1>
+        <p className="mt-4 text-lg text-gray-500 font-medium">
+          Belajar langsung dari para praktisi dan pakar industri terkemuka di bidangnya.
+        </p>
+      </section>
+
+      {/* ── GRID SECTION (Dihandle oleh Client Component untuk Interaktivitas Klik) ── */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <h2 className="mb-10 text-center text-2xl font-bold text-[#10b981] sm:text-3xl">
+          Beberapa .id Trainer Hebat di Academy
+        </h2>
 
         {trainerList.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center text-sm text-slate-500">
             Belum ada trainer aktif yang tersedia.
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-            {trainerList.map((trainer) => (
-              <TrainerCard key={trainer.id} trainer={trainer} />
-            ))}
-          </div>
+          <ClientTrainerSection trainers={trainerList} />
         )}
-      </div>
-      <div className="pb-16" />{" "}
+      </section>
+      
+      <div className="pb-16" />
     </main>
   );
 }

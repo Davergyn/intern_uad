@@ -3,7 +3,33 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/authContext";
-import type { EventRow, EventType, DeliveryMode } from "@/types/database";
+import type { EventType, DeliveryMode } from "@/types/database";
+
+type TrainerMini = {
+  id: number;
+  name: string;
+  roleTitle: string | null;
+  photoUrl: string | null;
+};
+
+type EventRow = {
+  id: number;
+  title: string;
+  description: string | null;
+  eventType: EventType;
+  deliveryMode: DeliveryMode;
+  eventDate: string;
+  startTime: string | null;
+  endTime: string | null;
+  quota: number | null;
+  price: string | null;
+  thumbnailUrl: string | null;
+  isPublished: boolean | null;
+  createdBy: number | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  trainers?: TrainerMini[];
+};
 import {
   Bookmark,
   Search,
@@ -309,8 +335,45 @@ export default function SavedEventsPage() {
                 </div>
               </div>
 
+              {/* Trainer Avatars */}
+              {event.trainers && event.trainers.length > 0 && (
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {event.trainers.slice(0, 4).map((trainer) => (
+                      trainer.photoUrl ? (
+                        <img
+                          key={trainer.id}
+                          src={trainer.photoUrl}
+                          alt={trainer.name}
+                          title={trainer.name}
+                          className="h-8 w-8 rounded-full object-cover ring-2 ring-white"
+                        />
+                      ) : (
+                        <div
+                          key={trainer.id}
+                          title={trainer.name}
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 ring-2 ring-white text-xs font-bold text-slate-500 uppercase"
+                        >
+                          {trainer.name.charAt(0)}
+                        </div>
+                      )
+                    ))}
+                    {event.trainers.length > 4 && (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 ring-2 ring-white text-xs font-bold text-slate-500">
+                        +{event.trainers.length - 4}
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {event.trainers.length === 1
+                      ? event.trainers[0].name
+                      : `${event.trainers.length} Trainer`}
+                  </span>
+                </div>
+              )}
+
               {/* Action Buttons */}
-              <div className="mt-5 flex gap-3 border-t border-slate-100 pt-4">
+              <div className="mt-4 flex gap-3 border-t border-slate-100 pt-4">
                 <button
                   onClick={() => handleUnsave(event.id)}
                   className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-rose-500 transition hover:bg-rose-50 hover:border-rose-100"

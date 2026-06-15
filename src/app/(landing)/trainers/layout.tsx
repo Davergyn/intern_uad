@@ -1,6 +1,6 @@
 import React from "react";
 
-export { metadata } from "./metadata";
+export { metadata } from "./ClientTrainerSection";
 
 export default function TrainersLayout({
   children,
