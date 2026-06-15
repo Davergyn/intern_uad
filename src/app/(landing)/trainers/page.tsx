@@ -29,7 +29,16 @@ export default async function TrainersPage() {
     .where(eq(trainers.isActive, true));
 
   // AGREGASI DATA: Mengelompokkan hasil join query menjadi array objek trainer dengan list event-nya
-  const trainersMap: Record<number, any> = {};
+  type EventItem = { id: number; title: string };
+  type TrainerMapEntry = {
+    id: number;
+    name: string;
+    photoUrl: string | null;
+    deskripsi: string | null;
+    spesialisasi: string | null;
+    events: EventItem[];
+  };
+  const trainersMap: Record<number, TrainerMapEntry> = {};
   
   rows.forEach((row) => {
     if (!trainersMap[row.id]) {
@@ -45,7 +54,7 @@ export default async function TrainersPage() {
     
     if (row.eventId && row.eventTitle) {
       // Masukkan event ke dalam list jika belum terdaftar (mencegah duplikasi)
-      const isExist = trainersMap[row.id].events.some((e: any) => e.id === row.eventId);
+      const isExist = trainersMap[row.id].events.some((e: EventItem) => e.id === row.eventId);
       if (!isExist) {
         trainersMap[row.id].events.push({
           id: row.eventId,

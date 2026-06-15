@@ -87,7 +87,7 @@ export default function SavedEventsPage() {
       if (response.ok) {
         const result = await response.json();
         if (result.data) {
-          return result.data.map((item: any) => item.eventId);
+          return result.data.map((item: { eventId: number }) => item.eventId);
         }
       }
     } catch (e) {

@@ -1,7 +1,5 @@
 import React from "react";
 
-export { metadata } from "./ClientTrainerSection";
-
 export default function TrainersLayout({
   children,
 }: {

@@ -151,7 +151,7 @@ export function EventTable({
           if (response.ok) {
             const result = await response.json();
             if (result.data) {
-              const ids = result.data.map((item: any) => item.eventId);
+              const ids = result.data.map((item: { eventId: number }) => item.eventId);
               setSavedIds(ids);
             }
           }

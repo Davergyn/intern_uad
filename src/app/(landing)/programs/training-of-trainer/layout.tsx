@@ -1,3 +1,5 @@
+import React from "react";
+
 export default function TrainingOfTrainerLayout({
   children,
 }: {
@@ -5,5 +7,3 @@ export default function TrainingOfTrainerLayout({
 }) {
   return <>{children}</>;
 }
-
-import React from "react";

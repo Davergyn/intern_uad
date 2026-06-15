@@ -7,9 +7,7 @@ import UpcomingCarousel from "./_components/UpcomingCarousel";
 import PastCarousel from "./_components/PastCarousel";
 
 type Alt1PageProps = {
-  searchParams?:
-  | Promise<{ view?: string | string[] }>
-  | { view?: string | string[] };
+  searchParams?: Promise<{ view?: string | string[] }>;
 };
 
 /**
@@ -17,9 +15,8 @@ type Alt1PageProps = {
  * Kegunaan: Halaman landing page utama. Mengambil data dari Drizzle dan merender UI.
  */
 export default async function Alt1Page({ searchParams }: Alt1PageProps) {
-  // Resolusi searchParams (Bawaan aslimu)
-  const resolvedSearchParams =
-    searchParams instanceof Promise ? await searchParams : searchParams;
+  // Resolusi searchParams — Next.js 16 selalu mengembalikan Promise
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const activeView = Array.isArray(resolvedSearchParams?.view)
     ? resolvedSearchParams?.view[0]
     : resolvedSearchParams?.view;
